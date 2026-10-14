@@ -1,0 +1,13 @@
+{
+  // VS Code accepts comments in .vscode/mcp.json (JSONC).
+  "inputs": [
+    { "type": "promptString", "id": "docs-token", "description": "Docs API token", "password": true }
+  ],
+  "servers": {
+    "docs": {
+      "type": "http",
+      "url": "https://mcp.example.com/mcp",
+      "headers": { "Authorization": "Bearer ${input:docs-token}" }
+    }
+  }
+}

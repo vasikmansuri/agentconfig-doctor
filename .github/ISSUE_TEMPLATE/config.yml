@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/vasikmansuri/agentconfig-doctor/security/advisories/new
+    about: Please report vulnerabilities in AgentConfig Doctor privately.

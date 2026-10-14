@@ -1,0 +1,14 @@
+# The "files" allowlist in package.json is authoritative; this is a safety net.
+src/
+tests/
+examples/
+coverage/
+.github/
+*.tgz
+*.config.ts
+tsconfig.json
+eslint.config.js
+.prettierrc.json
+.prettierignore
+.env
+.env.*

@@ -1,0 +1,123 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run build
+      - run: npm run test:coverage
+      - name: Example scans return the documented exit codes
+        run: |
+          node dist/cli.js scan examples/safe-project --no-color
+          set +e
+          node dist/cli.js scan examples/risky-project --no-color > /dev/null
+          code=$?
+          set -e
+          echo "risky-project exit code: $code"
+          test "$code" -eq 1
+      - name: Self-scan this repository
+        run: node dist/cli.js scan . --exclude examples --exclude tests --fail-on low --fail-if-empty --no-color
+
+  cross-platform:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Pack and inspect
+        run: |
+          npm pack
+          tar -tzf agentconfig-doctor-*.tgz | sort | tee contents.txt
+          if grep -Eq '^package/(src|tests|examples|launch|scripts|\.github)/' contents.txt; then
+            echo "Unexpected files in the package"; exit 1
+          fi
+          grep -q '^package/dist/cli.js$' contents.txt
+          grep -q '^package/LICENSE$' contents.txt
+      - name: Install the tarball in a clean project
+        run: |
+          tarball="$PWD/$(ls agentconfig-doctor-*.tgz)"
+          mkdir -p "$RUNNER_TEMP/smoke" && cd "$RUNNER_TEMP/smoke"
+          npm init -y > /dev/null
+          npm install "$tarball"
+          npx agentconfig-doctor --version
+          npx agentconfig-doctor scan "$GITHUB_WORKSPACE/examples/safe-project" --no-color
+          set +e
+          npx agentconfig-doctor scan "$GITHUB_WORKSPACE/examples/risky-project" --format json > report.json
+          code=$?
+          set -e
+          test "$code" -eq 1
+          node -e "const r=require('./report.json'); if (!r.summary.failed) process.exit(1)"
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: npm audit (all dependencies)
+        run: npm audit --audit-level=moderate
+      - name: Verify registry signatures
+        run: npm audit signatures

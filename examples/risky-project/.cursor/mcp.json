@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "docs": { "command": "npx", "args": ["-y", "docs-mcp@1.2.0"] },
+    "docs": { "command": "npx", "args": ["-y", "docs-mcp@9.9.9"] },
+    "remote": { "command": "node", "url": "https://mcp.example.com/sse" }
+  }
+}

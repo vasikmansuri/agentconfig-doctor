@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run test *)",
+      "Bash(npm run lint)",
+      "Read(./src/**)"
+    ],
+    "ask": [
+      "Bash(git push *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Bash(curl *)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "github",
+    "docs"
+  ],
+  "sandbox": {
+    "enabled": true
+  }
+}

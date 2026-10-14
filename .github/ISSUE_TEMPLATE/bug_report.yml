@@ -1,0 +1,48 @@
+name: Bug report
+description: Something does not work as documented.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! **Never paste real credentials.** Replace any secret with a made-up value.
+        Report security vulnerabilities in the tool itself privately (see SECURITY.md).
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `agentconfig-doctor --version` and `node --version`
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command you ran
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: input
+    attributes:
+      label: Minimal configuration that reproduces the problem
+      description: Redacted. Include the file name (for example `.mcp.json`).
+      render: json
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+      description: Output and exit code (`echo $?`).
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true

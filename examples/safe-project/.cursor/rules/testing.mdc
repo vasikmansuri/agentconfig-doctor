@@ -1,0 +1,7 @@
+---
+description: How to write tests in this repository
+globs: src/**/*.test.ts
+alwaysApply: false
+---
+
+Use Vitest. Keep tests deterministic and avoid network access.

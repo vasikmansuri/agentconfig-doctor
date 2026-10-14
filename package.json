@@ -1,0 +1,83 @@
+{
+  "name": "agentconfig-doctor",
+  "version": "0.1.0",
+  "description": "Local-first scanner for AI coding-agent configs: finds exposed credentials, risky commands, broad permissions, and invalid MCP server definitions in Claude Code, Cursor, and VS Code configs.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "security",
+    "secrets",
+    "secret-scanning",
+    "claude-code",
+    "cursor",
+    "vscode",
+    "ai-agents",
+    "coding-agents",
+    "linter",
+    "config",
+    "devsecops",
+    "cli",
+    "developer-tools"
+  ],
+  "homepage": "https://github.com/vasikmansuri/agentconfig-doctor#readme",
+  "bugs": {
+    "url": "https://github.com/vasikmansuri/agentconfig-doctor/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vasikmansuri/agentconfig-doctor.git"
+  },
+  "license": "MIT",
+  "author": "AgentConfig Doctor contributors",
+  "type": "module",
+  "bin": {
+    "agentconfig-doctor": "dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "SECURITY.md"
+  ],
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run build && npm run test",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "commander": "^15.0.0",
+    "jsonc-parser": "^3.3.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.19.0",
+    "@vitest/coverage-v8": "^5.0.4",
+    "eslint": "^10.12.0",
+    "prettier": "^3.9.10",
+    "tsup": "^8.5.1",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.2",
+    "vitest": "^5.0.4"
+  }
+}
