@@ -1,11 +1,21 @@
-# AgentConfig Doctor
+# AgentConfig Doctor: MCP and AI Coding-Agent Config Security Scanner
 
 [![CI](https://github.com/vasikmansuri/agentconfig-doctor/actions/workflows/ci.yml/badge.svg)](https://github.com/vasikmansuri/agentconfig-doctor/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 **Catch leaked keys, dangerous commands and over-broad permissions in your AI coding-agent configuration before you commit or share it.**
 
-AgentConfig Doctor is a local-first CLI that statically checks Claude Code, Cursor and VS Code agent configuration: MCP server definitions, permission settings, hooks, rules and instruction files. Every finding explains what it saw, why it matters and how to fix it. It needs no AI API and no account, sends no telemetry, and never runs the commands it inspects.
+AgentConfig Doctor is an open-source **MCP security scanner** and config linter for **Claude Code, Cursor and VS Code (GitHub Copilot)**. This local-first CLI checks `.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json`, `.claude/settings.json`, Cursor rules, `CLAUDE.md` and `AGENTS.md` for:
+
+- **exposed secrets and API keys**
+- **risky shell commands**, such as `curl | sh` in hooks or MCP servers
+- **broad filesystem permissions**
+- **invalid or suspicious MCP server definitions**
+- **permission changes in pull requests**
+
+Every finding explains what it saw, why it matters and how to fix it. It needs no AI API and no account, sends no telemetry, and never runs the commands it inspects.
+
+**Use it to:** validate an MCP config file, audit Claude Code permissions, lint Cursor MCP servers, scan AI agent configs for secrets in CI, or review a repository's agent setup before you trust it.
 
 > Status: **0.1.0, pre-release.** The CLI is feature-complete for its first release and tested, but has not been published to npm yet. Until then, [run it from source](#from-source).
 
@@ -25,6 +35,7 @@ AgentConfig Doctor is a local-first CLI that statically checks Claude Code, Curs
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [Troubleshooting](#troubleshooting)
+- [FAQ](#faq)
 - [License and acknowledgements](#license-and-acknowledgements)
 
 ## Demo
@@ -260,6 +271,32 @@ npm run check   # typecheck, lint, format check, build, tests
 ## Troubleshooting
 
 Common problems (nothing found, a file is skipped, false positives, CI exit codes) are covered in [docs/troubleshooting.md](docs/troubleshooting.md).
+
+## FAQ
+
+### How do I check an MCP server configuration for security problems?
+
+Run `agentconfig-doctor scan` in your project, or `agentconfig-doctor check-mcp .mcp.json` to validate only MCP files. It reports leaked credentials, unpinned `npx`/`uvx` packages, plain-HTTP endpoints, privileged Docker flags, whole-disk filesystem access and structural errors, each with a file and line number.
+
+### Is it safe to run on an untrusted repository?
+
+Yes, by design. It parses files as text and never executes commands, never contacts MCP servers, makes no network requests and ignores any configuration inside the scanned repository. See the [security model](docs/security-model.md).
+
+### Does it work with Claude Code permissions and hooks?
+
+Yes. It reads `.claude/settings.json` and `settings.local.json` and flags unrestricted `Bash` allow rules without the sandbox, access to `~/.ssh` or `/`, `enableAllProjectMcpServers`, ignored rule syntax and risky hook commands. With a baseline it also reports newly added allow rules or removed deny rules in pull requests.
+
+### Does it detect secrets in Cursor or VS Code MCP config?
+
+Yes. `.cursor/mcp.json` and `.vscode/mcp.json` are scanned for GitHub, AWS, Anthropic, OpenAI, Slack, Stripe, Google, npm and Hugging Face tokens, private keys, JWTs and passwords in URLs. Values are always redacted in the output.
+
+### How is this different from a general secret scanner like gitleaks or TruffleHog?
+
+Those tools are excellent at finding secrets across a whole Git history. AgentConfig Doctor is narrower and understands agent configuration: it knows what an MCP server definition, a permission rule or a hook means, so it can flag risky behaviour, invalid configuration and permission changes, not just secrets. Using both is reasonable.
+
+### Do I need an AI model or API key?
+
+No. All checks are deterministic rules that run locally.
 
 ## License and acknowledgements
 
