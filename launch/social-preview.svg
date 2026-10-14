@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1117"/>
+      <stop offset="1" stop-color="#161b2e"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="640" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1280" height="6" fill="#3fb950"/>
+
+  <!-- Shield mark -->
+  <g transform="translate(80,92)">
+    <path d="M36 0 L72 13 V40 C72 62 56 78 36 86 C16 78 0 62 0 40 V13 Z" fill="#1f6feb"/>
+    <path d="M22 43 L32 53 L52 31" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <text x="176" y="140" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="58" font-weight="700" fill="#f0f6fc">AgentConfig Doctor</text>
+  <text x="80" y="226" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="34" fill="#c9d1d9">Security scanner for MCP and AI coding-agent configs</text>
+  <text x="80" y="274" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="26" fill="#8b949e">Leaked secrets · risky commands · broad permissions · invalid MCP servers</text>
+
+  <!-- Terminal card based on real CLI output -->
+  <g transform="translate(80,318)">
+    <rect width="1120" height="214" rx="14" fill="#010409" stroke="#30363d" stroke-width="2"/>
+    <circle cx="28" cy="26" r="7" fill="#f85149"/>
+    <circle cx="52" cy="26" r="7" fill="#d29922"/>
+    <circle cx="76" cy="26" r="7" fill="#3fb950"/>
+    <g font-family="Menlo, Monaco, Consolas, monospace" font-size="22">
+      <text x="28" y="78" fill="#8b949e">$ <tspan fill="#f0f6fc">agentconfig-doctor scan</tspan></text>
+      <text y="116"><tspan x="28" fill="#ff7b72" font-weight="700">HIGH</tspan><tspan x="160" fill="#f0f6fc">ACD002</tspan><tspan x="282" fill="#c9d1d9">hook pipes a download into bash</tspan></text>
+      <text y="150"><tspan x="28" fill="#ff7b72" font-weight="700">HIGH</tspan><tspan x="160" fill="#f0f6fc">ACD003</tspan><tspan x="282" fill="#c9d1d9">MCP server can read the entire filesystem</tspan></text>
+      <text y="184"><tspan x="28" fill="#d29922" font-weight="700">MEDIUM</tspan><tspan x="160" fill="#f0f6fc">ACD007</tspan><tspan x="282" fill="#c9d1d9">server "docs" defined twice in .cursor/mcp.json</tspan></text>
+    </g>
+  </g>
+
+  <text x="80" y="590" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="26" fill="#c9d1d9">Claude Code · Cursor · VS Code</text>
+  <text x="1200" y="590" text-anchor="end" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="26" fill="#3fb950">Open source · MIT · Local-first CLI</text>
+</svg>
