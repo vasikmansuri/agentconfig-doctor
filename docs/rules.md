@@ -33,6 +33,8 @@ Analyses MCP `command` plus `args`, `headersHelper`, Claude Code hook commands, 
 - **medium:** world-writable `chmod`, `sudo`, TLS-verification bypass.
 - **low:** MCP servers started through `sh -c` or `cmd /c` style wrappers.
 
+MCP command lines that contain variable references are also expanded statically and matched again, so a command that only becomes dangerous after expansion (for example `"command": "${RUN:-rm}", "args": ["-rf", "/"]`) is reported "after variable expansion". The expanded line is attached to the finding as `resolvedCommand`. Expansion never reads the environment: Claude Code `${VAR:-default}` becomes the default, Cursor and VS Code `${userHome}`, `${workspaceFolder}`, `${/}` and `${pathSeparator}` become `~`, `.` and `/`, and every other reference stays a visible marker such as `⟨env:NAME⟩` or `⟨input:id⟩`.
+
 In prose files most patterns are reported at a lower severity and with low confidence, because documentation often quotes installers.
 
 ### ACD003 Broad filesystem access (up to high)

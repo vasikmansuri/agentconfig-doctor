@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- ACD002 expands variable references in MCP command lines statically and checks the result, so commands that only become dangerous after expansion are reported. Findings carry a redacted `resolvedCommand` that the HTML, terminal and JSON reports show next to the source location.
+
 ## [0.1.0] - Unreleased
 
 First public version.

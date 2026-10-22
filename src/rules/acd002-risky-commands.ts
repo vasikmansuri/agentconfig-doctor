@@ -2,12 +2,15 @@ import type { ConfigDocument, SourceLocation } from '../types/index.js';
 import { scrubSecrets } from '../util/secrets.js';
 import { isRecord, shortHash, truncate } from '../util/text.js';
 import { isShellWrapper, matchCommandPatterns } from './command-patterns.js';
+import { resolveInterpolation } from './interpolation.js';
 import { commandLine, getMcpServers } from './mcp-model.js';
 import { getSettings, hookCommands, parsePermissionRule, stringsAt } from './settings-model.js';
 import { findingFor, type Rule, type RuleFinding } from './types.js';
 
 interface CommandSource {
   text: string;
+  /** Command line after static variable expansion, when it differs from text. */
+  resolved?: string | undefined;
   label: string;
   key: string;
   /** Prose files are matched with reduced severity; location is derived per match. */
@@ -24,8 +27,11 @@ function commandSources(doc: ConfigDocument): CommandSource[] {
   const sources: CommandSource[] = [];
   for (const server of getMcpServers(doc)) {
     if (server.command !== undefined) {
+      const text = commandLine(server);
+      const resolved = resolveInterpolation(text, doc.kind);
       sources.push({
-        text: commandLine(server),
+        text,
+        resolved: resolved === text ? undefined : resolved,
         label: `MCP server "${server.name}"`,
         key: `mcp:${server.name}`,
         prose: false,
@@ -109,19 +115,31 @@ export const riskyCommands: Rule = {
     const findings: RuleFinding[] = [];
     for (const doc of ctx.documents) {
       for (const source of commandSources(doc)) {
-        for (const match of matchCommandPatterns(source.text)) {
+        const resolvedCommand = source.resolved
+          ? truncate(scrubSecrets(source.resolved), 300)
+          : undefined;
+        const rawIds = new Set(matchCommandPatterns(source.text).map((m) => m.pattern.id));
+        const matches = [
+          ...matchCommandPatterns(source.text).map((m) => ({ ...m, expanded: false })),
+          ...(source.resolved ? matchCommandPatterns(source.resolved) : [])
+            .filter((m) => !rawIds.has(m.pattern.id))
+            .map((m) => ({ ...m, expanded: true })),
+        ];
+        for (const match of matches) {
           const severity = source.prose ? match.pattern.proseSeverity : match.pattern.severity;
           const action = source.allowRule
             ? `pre-approves a command that ${match.pattern.reason}`
             : source.prose
               ? `contains a command that ${match.pattern.reason}`
               : `runs a command that ${match.pattern.reason}`;
+          const after = match.expanded ? ' after variable expansion' : '';
           findings.push(
             findingFor(doc, {
               severity,
               confidence: source.prose ? 'low' : 'high',
-              message: `${capitalise(source.label)} ${action}.`,
+              message: `${capitalise(source.label)} ${action}${after}.`,
               evidence: truncate(scrubSecrets(match.text), 120),
+              resolvedCommand,
               location: source.prose ? doc.locateOffset(match.index) : source.location,
               key: `${source.key}:${match.pattern.id}${source.prose ? `:${shortHash(match.text)}` : ''}`,
               why: source.prose
@@ -133,12 +151,16 @@ export const riskyCommands: Rule = {
       }
       for (const server of getMcpServers(doc)) {
         if (server.command && isShellWrapper(server.command, server.args)) {
+          const text = commandLine(server);
+          const resolved = resolveInterpolation(text, doc.kind);
           findings.push(
             findingFor(doc, {
               severity: 'low',
               confidence: 'medium',
               message: `MCP server "${server.name}" starts through an inline shell script (${server.command} with an inline-command flag).`,
-              evidence: truncate(scrubSecrets(commandLine(server)), 120),
+              evidence: truncate(scrubSecrets(text), 120),
+              resolvedCommand:
+                resolved === text ? undefined : truncate(scrubSecrets(resolved), 300),
               location: doc.locate(server.path),
               key: `mcp:${server.name}:shell-wrapper`,
               why: 'Shell wrappers hide the real executable inside a string, allow command chaining, and make reviews and allow-listing harder. This is common and not malicious by itself.',

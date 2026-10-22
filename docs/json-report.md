@@ -58,14 +58,15 @@
 }
 ```
 
-| Field                                                         | Notes                                                                                              |
-| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `summary.failed`                                              | Whether any counted finding is at or above `failOn`. Matches exit code 1.                          |
-| `summary.newFindings`, `summary.resolvedFindings`, `baseline` | Present only with `--baseline`.                                                                    |
-| `findings[].kind`                                             | One of `claude-mcp`, `cursor-mcp`, `vscode-mcp`, `claude-settings`, `cursor-rule`, `instructions`. |
-| `findings[].line`, `findings[].column`                        | 1-based. Omitted when there is no reliable location (for example a removed deny rule).             |
-| `findings[].evidence`                                         | Redacted and truncated. Optional.                                                                  |
-| `findings[].baseline`                                         | `"new"` or `"existing"`, only with `--baseline`.                                                   |
-| `files[].path`, `findings[].file`                             | POSIX path relative to the scan root, or the path as given for a single-file scan.                 |
+| Field                                                         | Notes                                                                                                                           |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `summary.failed`                                              | Whether any counted finding is at or above `failOn`. Matches exit code 1.                                                       |
+| `summary.newFindings`, `summary.resolvedFindings`, `baseline` | Present only with `--baseline`.                                                                                                 |
+| `findings[].kind`                                             | One of `claude-mcp`, `cursor-mcp`, `vscode-mcp`, `claude-settings`, `cursor-rule`, `instructions`.                              |
+| `findings[].line`, `findings[].column`                        | 1-based. Omitted when there is no reliable location (for example a removed deny rule).                                          |
+| `findings[].evidence`                                         | Redacted and truncated. Optional.                                                                                               |
+| `findings[].resolvedCommand`                                  | ACD002 only, for MCP command lines with variable references: the line after static expansion. Redacted and truncated. Optional. |
+| `findings[].baseline`                                         | `"new"` or `"existing"`, only with `--baseline`.                                                                                |
+| `files[].path`, `findings[].file`                             | POSIX path relative to the scan root, or the path as given for a single-file scan.                                              |
 
 Findings are sorted by severity (most severe first), then by file, line, column, rule ID and fingerprint.

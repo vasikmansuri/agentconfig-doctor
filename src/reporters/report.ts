@@ -57,6 +57,7 @@ function scrubFinding(f: ReportFinding): ReportFinding {
     remediation: scrubSecrets(f.remediation),
   };
   if (f.evidence !== undefined) out.evidence = scrubSecrets(f.evidence);
+  if (f.resolvedCommand !== undefined) out.resolvedCommand = scrubSecrets(f.resolvedCommand);
   return out;
 }
 

@@ -86,6 +86,11 @@ export interface Finding {
   message: string;
   /** Redacted, truncated excerpt supporting the finding. */
   evidence?: string;
+  /**
+   * For commands that contain variable references: the command line after
+   * static expansion (see rules/interpolation.ts). Redacted and truncated.
+   */
+  resolvedCommand?: string;
   why: string;
   remediation: string;
   /** Stable identifier used by baselines. Independent of line numbers. */

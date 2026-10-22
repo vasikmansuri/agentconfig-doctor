@@ -24,6 +24,8 @@ export interface RuleFinding {
   confidence: Confidence;
   message: string;
   evidence?: string | undefined;
+  /** Command line after static variable expansion, when it differs from the source. */
+  resolvedCommand?: string | undefined;
   location?: SourceLocation | undefined;
   /** Overrides the rule's default explanation. */
   why?: string | undefined;

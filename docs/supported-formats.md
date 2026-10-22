@@ -17,7 +17,7 @@ Sources: <https://code.claude.com/docs/en/mcp>, <https://code.claude.com/docs/en
   - `type`: `stdio`, `http`, `sse`, `ws`, or `streamable-http` (an alias of `http`). Claude Code treats an entry with `url` but no `type` as stdio and rejects it; ACD005 reports this.
   - stdio: `command` (string), `args` (string array), `env` (object of strings).
   - remote: `url`, `headers` (object of strings), `headersHelper` (a command), `timeout`, `oauth`.
-- **Variable expansion:** `${VAR}` and `${VAR:-default}` in `command`, `args`, `env`, `url` and `headers`. Values that contain a reference are not reported as hard-coded secrets.
+- **Variable expansion:** `${VAR}` and `${VAR:-default}` in `command`, `args`, `env`, `url` and `headers`. Values that contain a reference are not reported as hard-coded secrets. ACD002 also checks the command line with each default substituted (see [rules](rules.md#acd002-risky-command-configuration-up-to-critical)).
 
 ### `.claude/settings.json` and `.claude/settings.local.json`
 
@@ -70,6 +70,7 @@ Source: <https://code.visualstudio.com/docs/copilot/reference/mcp-configuration>
 - **Structure:** `{ "inputs": [...], "servers": { "<name>": <server> } }`. The key is `servers`, not `mcpServers`; ACD005 points out the mix-up.
 - stdio: `type: "stdio"`, `command`, `args`, `env` (values may be strings, numbers or null), `envFile`, `cwd`.
 - remote: `type: "http"` or `"sse"`, `url`, `headers`.
+- Predefined variables such as `${workspaceFolder}`, `${userHome}`, `${env:NAME}` and `${/}` ([variables reference](https://code.visualstudio.com/docs/reference/variables-reference)).
 - `inputs`: an array of `{ type, id, description, password }`. Every `${input:<id>}` reference must match a declared input; ACD005 reports undefined ones.
 
 ## Not supported (yet)
