@@ -1,5 +1,5 @@
 {
-  "name": "agentconfig-doctor",
+  "name": "@vasikmansuri/agentconfig-doctor",
   "version": "0.1.0",
   "description": "MCP security scanner and config linter for AI coding agents: finds exposed secrets, risky commands, broad permissions and invalid MCP servers in Claude Code, Cursor and VS Code (Copilot) configs. Local-first, no telemetry.",
   "keywords": [
@@ -89,5 +89,8 @@
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.71.2",
     "vitest": "^5.0.4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

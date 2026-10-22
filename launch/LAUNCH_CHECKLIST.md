@@ -45,7 +45,7 @@ Status as of 2026-10-14. `[x]` means done and verified; `[ ]` means pending.
   npm view agentconfig-doctor name   # should still be E404 (name unclaimed)
   npm publish --access public        # prompts for a one-time password
   ```
-- [ ] After publishing, update the README status note (it says "has not been published to npm yet"), then confirm `npx agentconfig-doctor@0.1.0 --version` works from a clean directory.
+- [ ] After publishing, update the README status note (it says "has not been published to npm yet"), then confirm `npx @vasikmansuri/agentconfig-doctor@0.1.0 --version` works from a clean directory.
 
 ## Launch materials
 

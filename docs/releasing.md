@@ -21,7 +21,7 @@ Releases are manual. No workflow publishes to npm or creates GitHub releases aut
    npm pack --dry-run          # expect only dist/, docs/, README.md, LICENSE, CHANGELOG.md, SECURITY.md, package.json
    npm pack
    mkdir -p /tmp/acd-smoke && cd /tmp/acd-smoke && npm init -y >/dev/null
-   npm install /path/to/agentconfig-doctor-0.1.1.tgz
+   npm install /path/to/vasikmansuri-agentconfig-doctor-0.1.1.tgz
    npx agentconfig-doctor --version
    npx agentconfig-doctor scan /path/to/agentconfig-doctor/examples/risky-project; echo "exit=$?"   # expect 1
    ```

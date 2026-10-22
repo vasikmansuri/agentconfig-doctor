@@ -8,8 +8,8 @@ Two small projects for trying the scanner. All values are made up; nothing here 
 | [`safe-project`](safe-project) | Exit code 0. Uses pinned packages, `${VAR}` and `${input:...}` references, scoped allow rules, deny rules for `.env`, and the sandbox. |
 
 ```bash
-npx agentconfig-doctor scan examples/risky-project
-npx agentconfig-doctor scan examples/safe-project
+npx @vasikmansuri/agentconfig-doctor scan examples/risky-project
+npx @vasikmansuri/agentconfig-doctor scan examples/safe-project
 ```
 
 CI runs both and checks their exit codes.

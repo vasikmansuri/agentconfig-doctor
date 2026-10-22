@@ -125,8 +125,8 @@ Requires Node.js 22.12 or later.
 ### From npm (after the first release)
 
 ```bash
-npx agentconfig-doctor scan            # one-off
-npm install --global agentconfig-doctor
+npx @vasikmansuri/agentconfig-doctor scan            # one-off
+npm install --global @vasikmansuri/agentconfig-doctor
 ```
 
 ### From source
