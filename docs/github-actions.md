@@ -63,7 +63,7 @@ The JSON report is redacted, but it still describes your configuration, so keep 
 Commit a baseline once:
 
 ```bash
-npx agentconfig-doctor baseline create
+npx @vasikmansuri/agentconfig-doctor baseline create
 git add .agentconfig-doctor-baseline.json
 ```
 

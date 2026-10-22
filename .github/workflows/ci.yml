@@ -83,15 +83,15 @@ jobs:
       - name: Pack and inspect
         run: |
           npm pack
-          tar -tzf agentconfig-doctor-*.tgz | sort | tee contents.txt
-          if grep -Eq '^package/(src|tests|examples|launch|scripts|\.github)/' contents.txt; then
+          tar -tzf vasikmansuri-agentconfig-doctor-*.tgz | sort | tee contents.txt
+          if grep -Eq '^package/(src|tests|examples|launch|scripts|docs/assets|\.github)/' contents.txt; then
             echo "Unexpected files in the package"; exit 1
           fi
           grep -q '^package/dist/cli.js$' contents.txt
           grep -q '^package/LICENSE$' contents.txt
       - name: Install the tarball in a clean project
         run: |
-          tarball="$PWD/$(ls agentconfig-doctor-*.tgz)"
+          tarball="$PWD/$(ls vasikmansuri-agentconfig-doctor-*.tgz)"
           mkdir -p "$RUNNER_TEMP/smoke" && cd "$RUNNER_TEMP/smoke"
           npm init -y > /dev/null
           npm install "$tarball"
