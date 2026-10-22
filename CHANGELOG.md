@@ -4,16 +4,20 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-### Added
+## [0.1.1] - 2026-10-23
 
-- ACD002 expands variable references in MCP command lines statically and checks the result, so commands that only become dangerous after expansion are reported. Findings carry a redacted `resolvedCommand` that the HTML, terminal and JSON reports show next to the source location.
+### Changed
 
-## [0.1.0] - Unreleased
+- Published as `@vasikmansuri/agentconfig-doctor`; the command is still `agentconfig-doctor`.
+- README screenshots are no longer included in the package.
+
+## [0.1.0] - 2026-10-23
 
 First public version.
 
 ### Added
 
+- ACD002 expands variable references in MCP command lines statically and checks the result, so commands that only become dangerous after expansion are reported. Findings carry a redacted `resolvedCommand` that the HTML, terminal and JSON reports show next to the source location.
 - `scan` command for Claude Code (`.mcp.json`, `.claude/settings.json`, `.claude/settings.local.json`, `CLAUDE.md`), Cursor (`.cursor/mcp.json`, `.cursor/rules/**/*.mdc`, `.cursorrules`), VS Code (`.vscode/mcp.json`) and `AGENTS.md`.
 - Rules ACD001–ACD011: exposed credentials, risky commands, broad filesystem access, hard-coded environment secrets, invalid MCP configuration, suspicious server definitions, duplicate server names, invalid settings, permission changes since a baseline, risky setting combinations, and hidden Unicode.
 - Terminal, JSON (schema version 1) and self-contained HTML reports, with secrets redacted in every format.
