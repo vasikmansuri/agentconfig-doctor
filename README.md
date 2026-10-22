@@ -21,7 +21,7 @@ Every finding explains what it saw, why it matters and how to fix it. It needs n
 
 **Use it to:** validate an MCP config file, audit Claude Code permissions, lint Cursor MCP servers, scan AI agent configs for secrets in CI, or review a repository's agent setup before you trust it.
 
-> Status: **0.1.0, pre-release.** The CLI is feature-complete for its first release and tested, but has not been published to npm yet. Until then, [run it from source](#from-source).
+> Status: **0.1.0, first release.** Published on npm as [`@vasikmansuri/agentconfig-doctor`](https://www.npmjs.com/package/@vasikmansuri/agentconfig-doctor).
 
 ## Contents
 
