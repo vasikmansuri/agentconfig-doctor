@@ -63,7 +63,7 @@ export function renderHtml(report: Report): string {
 <h2>${e(f.title)}</h2>
 <p><code>${e(where)}</code></p>
 <p>${e(f.message)}</p>
-<dl>${f.evidence ? `<dt>Evidence</dt><dd><code>${e(f.evidence)}</code></dd>` : ''}
+<dl>${f.evidence ? `<dt>Evidence</dt><dd><code>${e(f.evidence)}</code></dd>` : ''}${f.resolvedCommand ? `<dt>Resolved command</dt><dd><code>${e(f.resolvedCommand)}</code> <span class="muted">(variables expanded statically from <code>${e(where)}</code>; ⟨…⟩ marks values only known at run time)</span></dd>` : ''}
 <dt>Why it matters</dt><dd>${e(f.why)}</dd>
 <dt>Remediation</dt><dd>${e(f.remediation)}</dd>
 <dt>Confidence</dt><dd>${e(f.confidence)}</dd>

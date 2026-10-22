@@ -46,6 +46,7 @@ export function renderTerminal(report: Report, options: TerminalOptions): string
     lines.push(`  ${c.cyan(where)}`);
     lines.push(`  ${safe(f.message)}`);
     if (f.evidence) lines.push(`  ${c.dim('evidence:')} ${safe(f.evidence)}`);
+    if (f.resolvedCommand) lines.push(`  ${c.dim('resolved:')} ${safe(f.resolvedCommand)}`);
     if (options.verbose) {
       lines.push(`  ${c.dim('why:')} ${safe(f.why)}`);
       lines.push(

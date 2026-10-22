@@ -108,6 +108,8 @@ export function analyzeDocuments(
         finding.column = f.location.column;
       }
       if (f.evidence !== undefined) finding.evidence = scrubSecrets(f.evidence);
+      if (f.resolvedCommand !== undefined)
+        finding.resolvedCommand = scrubSecrets(f.resolvedCommand);
       byFingerprint.set(fingerprint, finding);
     }
   }
