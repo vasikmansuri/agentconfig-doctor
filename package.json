@@ -54,6 +54,7 @@
   "files": [
     "dist",
     "docs",
+    "!docs/assets",
     "README.md",
     "LICENSE",
     "CHANGELOG.md",

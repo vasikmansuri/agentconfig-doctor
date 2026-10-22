@@ -16,7 +16,7 @@ AgentConfig Doctor is an open-source **MCP security scanner** and config linter 
 Every finding explains what it saw, why it matters and how to fix it. It needs no AI API and no account, sends no telemetry, and never runs the commands it inspects.
 
 <p align="center">
-  <img src="docs/assets/terminal-risky.png" alt="Terminal output of agentconfig-doctor scanning a risky project: four HIGH findings for a blanket Bash allow rule, Read access to ~/.ssh, auto-approved MCP servers and a curl | bash hook, then a FAIL summary" width="820">
+  <img src="https://raw.githubusercontent.com/vasikmansuri/agentconfig-doctor/main/docs/assets/terminal-risky.png" alt="Terminal output of agentconfig-doctor scanning a risky project: four HIGH findings for a blanket Bash allow rule, Read access to ~/.ssh, auto-approved MCP servers and a curl | bash hook, then a FAIL summary" width="820">
 </p>
 
 **Use it to:** validate an MCP config file, audit Claude Code permissions, lint Cursor MCP servers, scan AI agent configs for secrets in CI, or review a repository's agent setup before you trust it.
@@ -46,16 +46,16 @@ Every finding explains what it saw, why it matters and how to fix it. It needs n
 
 Real output from scanning [`examples/risky-project`](examples/risky-project) and [`examples/safe-project`](examples/safe-project). The screenshots are shortened (no `fix:` lines, first findings only).
 
-| Risky project: fails with 20 findings                                                  | Safe project: passes                                                                 |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| <img src="docs/assets/terminal-risky.png" alt="Risky project scan output" width="420"> | <img src="docs/assets/terminal-safe.png" alt="Safe project scan output" width="420"> |
+| Risky project: fails with 20 findings                                                                                                                         | Safe project: passes                                                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <img src="https://raw.githubusercontent.com/vasikmansuri/agentconfig-doctor/main/docs/assets/terminal-risky.png" alt="Risky project scan output" width="420"> | <img src="https://raw.githubusercontent.com/vasikmansuri/agentconfig-doctor/main/docs/assets/terminal-safe.png" alt="Safe project scan output" width="420"> |
 
 ### HTML report
 
 `--format html` writes one self-contained page you can attach to a pull request or CI run. Each finding shows the file and line, the evidence (with secrets redacted), why it matters and how to fix it.
 
 <p align="center">
-  <img src="docs/assets/html-report.png" alt="HTML report with severity counts, a FAIL banner and finding cards for ACD010 and ACD003" width="720">
+  <img src="https://raw.githubusercontent.com/vasikmansuri/agentconfig-doctor/main/docs/assets/html-report.png" alt="HTML report with severity counts, a FAIL banner and finding cards for ACD010 and ACD003" width="720">
 </p>
 
 ### Commands hidden behind variables
@@ -63,7 +63,7 @@ Real output from scanning [`examples/risky-project`](examples/risky-project) and
 MCP configs can use variables such as `${RUN:-rm}` or `${userHome}`, so the command that runs is not the one you read. AgentConfig Doctor expands them statically, without reading your environment, checks the result, and prints a **resolved** command next to the source location:
 
 <p align="center">
-  <img src="docs/assets/terminal-resolved.png" alt="A server whose command is ${RUN:-rm} with args -rf / is reported as HIGH ACD002 after variable expansion, with resolved: rm -rf /" width="820">
+  <img src="https://raw.githubusercontent.com/vasikmansuri/agentconfig-doctor/main/docs/assets/terminal-resolved.png" alt="A server whose command is ${RUN:-rm} with args -rf / is reported as HIGH ACD002 after variable expansion, with resolved: rm -rf /" width="820">
 </p>
 
 <details>
