@@ -330,3 +330,9 @@ No. All checks are deterministic rules that run locally.
 ## License and acknowledgements
 
 [MIT](LICENSE). Built with [Commander.js](https://github.com/tj/commander.js), [Zod](https://zod.dev) and Microsoft's [jsonc-parser](https://github.com/microsoft/node-jsonc-parser). Configuration formats follow the public documentation of Claude Code, Cursor, VS Code and the Model Context Protocol. This project is not affiliated with Anthropic, Anysphere (Cursor) or Microsoft.
+
+## Support
+
+If this project is useful to you, you can support my open-source work:
+
+<a href="https://buymeacoffee.com/vasikmansuri"><img src="https://img.shields.io/badge/Buy_Me_a_Coffee-support-ffdd00?style=for-the-badge&logo=buymeacoffee&logoColor=black" alt="Buy Me a Coffee"/></a>
