@@ -56,6 +56,55 @@ Notes:
 
 The JSON report is redacted, but it still describes your configuration, so keep artifact retention short for private repositories.
 
+## GitHub code scanning (SARIF)
+
+> `--format sarif` is available from version 0.2.0.
+
+Upload a [SARIF report](sarif.md) to show findings in the repository's **Security** tab and as annotations on pull requests. Code scanning is available for public repositories; private repositories need GitHub Code Security.
+
+```yaml
+# .github/workflows/agentconfig-doctor-sarif.yml
+name: Agent config code scanning
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - name: Scan agent configuration
+        run: npx --yes @vasikmansuri/agentconfig-doctor@0.2.0 scan . --format sarif --output agentconfig-doctor.sarif
+      - name: Upload to code scanning
+        if: always() && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: agentconfig-doctor.sarif
+          category: agentconfig-doctor
+```
+
+Notes:
+
+- `security-events: write` is needed only for the upload, so it is granted to this job alone.
+- `if: always()` uploads the report even when the scan step fails the job on findings.
+- Pull requests from forks get a read-only token, so the upload would fail there. The condition skips it; the scan step still fails the check.
+- `category` keeps these alerts separate from other code scanning tools.
+
 ## Failing only on new problems (baseline)
 
 Commit a baseline once:

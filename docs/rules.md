@@ -20,9 +20,13 @@ Every finding has a 16-hex-digit `fingerprint` derived from the rule ID, the fil
 
 ## Rules
 
+<a id="acd001"></a>
+
 ### ACD001 Potential exposed credential (up to critical)
 
 Matches documented vendor token formats (GitHub classic and fine-grained, GitLab, AWS key IDs and secret-key assignments, Anthropic, OpenAI-style `sk-`, Slack tokens and webhooks, Stripe live and test keys, Google API keys, npm, Hugging Face), PEM private keys, JWTs, passwords embedded in URLs (`scheme://user:pass@host`) and literal `Bearer` tokens. Variable references (`${VAR}`, `$VAR`, `{{VAR}}`) and obvious placeholders (`xxxx`, `<token>`, `your-...`, `EXAMPLE`, `changeme`) are ignored. Applies to every supported file, including prose.
+
+<a id="acd002"></a>
 
 ### ACD002 Risky command configuration (up to critical)
 
@@ -37,6 +41,8 @@ MCP command lines that contain variable references are also expanded statically 
 
 In prose files most patterns are reported at a lower severity and with low confidence, because documentation often quotes installers.
 
+<a id="acd003"></a>
+
 ### ACD003 Broad filesystem access (up to high)
 
 Reports paths that expose any of the following:
@@ -48,6 +54,8 @@ Reports paths that expose any of the following:
 
 It checks MCP args (including `--flag=/path`), docker/podman `-v`/`--mount` sources, `permissions.additionalDirectories`, Read/Edit/Write/Glob/Grep allow rules that use `//` or `~/`, and `sandbox.filesystem.allowWrite`/`allowRead`. To accept a path, add it exactly to `allowedPaths` in a config file.
 
+<a id="acd004"></a>
+
 ### ACD004 Hard-coded value in sensitive environment variable or header (high)
 
 Flags literal values in two places:
@@ -56,6 +64,8 @@ Flags literal values in two places:
 - **Headers:** `Authorization`, `Cookie`, and `X-...-Key/Token` headers.
 
 Values of 8 characters or fewer, booleans, numbers, references and placeholders are ignored. Values that match a known credential format are left to ACD001.
+
+<a id="acd005"></a>
 
 ### ACD005 Invalid MCP configuration (medium)
 
@@ -72,6 +82,8 @@ Checks:
 - stdio-only fields on remote servers.
 - VS Code `inputs` structure and undefined `${input:...}` references.
 
+<a id="acd006"></a>
+
 ### ACD006 Suspicious MCP server definition (up to high)
 
 - **Remote endpoints:**
@@ -87,9 +99,13 @@ Checks:
   - `NODE_TLS_REJECT_UNAUTHORIZED=0`, `PYTHONHTTPSVERIFY=0`, `GIT_SSL_NO_VERIFY` (medium);
   - `LD_PRELOAD` / `DYLD_INSERT_LIBRARIES`-style variables (high).
 
+<a id="acd007"></a>
+
 ### ACD007 Duplicate or conflicting MCP server name (medium)
 
 Duplicate keys in the servers object (medium); names that differ only by case (low); the same name with a different command, args or url in another scanned MCP file (low).
+
+<a id="acd008"></a>
 
 ### ACD008 Missing or invalid setting (medium)
 
@@ -107,14 +123,20 @@ Duplicate keys in the servers object (medium); names that differ only by case (l
 
 **Cursor rules:** `.md` instead of `.mdc`, missing or unterminated frontmatter, and field types.
 
+<a id="acd009"></a>
+
 ### ACD009 Permission change since baseline (up to high)
 
 Requires `--baseline`. See [baselines.md](baselines.md).
+
+<a id="acd010"></a>
 
 ### ACD010 Risky combination of settings (high)
 
 - `enableAllProjectMcpServers: true` while the project's `.mcp.json` defines local (stdio) servers: high (medium if none exist yet).
 - An allow rule that approves every shell command (`Bash`, `Bash(*)`, `Bash(:*)`, `PowerShell`) with no `sandbox.enabled: true` in any settings file of the same project: high.
+
+<a id="acd011"></a>
 
 ### ACD011 Hidden or bidirectional Unicode characters (up to high)
 
