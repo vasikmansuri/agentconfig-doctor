@@ -21,7 +21,7 @@ Every finding explains what it saw, why it matters and how to fix it. It needs n
 
 **Use it to:** validate an MCP config file, audit Claude Code permissions, lint Cursor MCP servers, scan AI agent configs for secrets in CI, or review a repository's agent setup before you trust it.
 
-> Status: **0.1.0, first release.** Published on npm as [`@vasikmansuri/agentconfig-doctor`](https://www.npmjs.com/package/@vasikmansuri/agentconfig-doctor).
+> Status: **0.1.2, early release.** Published on npm as [`@vasikmansuri/agentconfig-doctor`](https://www.npmjs.com/package/@vasikmansuri/agentconfig-doctor).
 
 ## Contents
 
@@ -122,7 +122,7 @@ Findings come from static, heuristic rules. A clean result means no implemented 
 
 Requires Node.js 22.12 or later.
 
-### From npm (after the first release)
+### From npm
 
 ```bash
 npx @vasikmansuri/agentconfig-doctor scan            # one-off
@@ -223,10 +223,12 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
-      - run: npx --yes agentconfig-doctor@0.1.0 scan . --fail-on high
+      - run: npx --yes @vasikmansuri/agentconfig-doctor@0.1.2 scan . --fail-on high
 ```
 
-The workflow needs only `contents: read`, uses no secrets, and is safe on `pull_request` from forks because the scanner never executes scanned content. Guidance on JSON artifacts and baselines in CI is in [docs/github-actions.md](docs/github-actions.md). The npm-based example works once 0.1.0 is published.
+The workflow needs only `contents: read`, uses no secrets, and is safe on `pull_request` from forks because the scanner never executes scanned content. Guidance on JSON artifacts and baselines in CI is in [docs/github-actions.md](docs/github-actions.md).
+
+Always use the scoped package name `@vasikmansuri/agentconfig-doctor` with `npx`. The unscoped name `agentconfig-doctor` is not this project, and `npx` would run whatever package is published under it.
 
 ## Output formats and exit codes
 

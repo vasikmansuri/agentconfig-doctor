@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Fixed
+
+- The README and GitHub Actions guide ran `npx --yes agentconfig-doctor@0.1.0`. The package is published as `@vasikmansuri/agentconfig-doctor`, and the unscoped name belongs to nobody, so whoever registered it could have run code in workflows copied from the docs. The examples now use `@vasikmansuri/agentconfig-doctor@0.1.2`, and a test keeps registry `npx` calls in the docs scoped.
+- The "Running from source" workflow example checked out a tag that does not exist.
+
+## [0.1.2] - 2026-10-24
+
+### Changed
+
+- The package metadata includes a funding link.
+
 ## [0.1.1] - 2026-10-23
 
 ### Changed
@@ -27,5 +38,7 @@ First public version.
 - Documented exit codes 0–4, plus `--fail-on`, `--fail-if-empty`, `--include`, `--exclude` and `--max-file-size`.
 - Safe file handling: symlink boundary checks, size limits, binary detection, and terminal and HTML escaping.
 
-[Unreleased]: https://github.com/vasikmansuri/agentconfig-doctor/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/vasikmansuri/agentconfig-doctor/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/vasikmansuri/agentconfig-doctor/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/vasikmansuri/agentconfig-doctor/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/vasikmansuri/agentconfig-doctor/releases/tag/v0.1.0
