@@ -42,7 +42,14 @@ export const envLiterals: Rule = {
   severity: 'high',
   description:
     'Flags literal values assigned to sensitively named environment variables (..._TOKEN, ..._API_KEY, PASSWORD, ...) and authentication headers in MCP server definitions and Claude Code "env" settings. References such as ${API_KEY}, ${env:API_KEY} and ${input:api-key} are not flagged.',
-  appliesTo: ['claude-mcp', 'cursor-mcp', 'vscode-mcp', 'claude-settings'],
+  appliesTo: [
+    'claude-mcp',
+    'cursor-mcp',
+    'vscode-mcp',
+    'claude-settings',
+    'claude-plugin-manifest',
+    'claude-marketplace',
+  ],
   why: 'A literal value under a sensitive name is very likely a credential that is now stored in the repository, shared with every collaborator, and visible to the agent.',
   remediation:
     'Replace the literal with a variable reference (Claude Code: "${API_KEY}"; Cursor: "${env:API_KEY}"; VS Code: "${input:api-key}" with an "inputs" entry using "password": true) and rotate the credential if the file was ever committed.',

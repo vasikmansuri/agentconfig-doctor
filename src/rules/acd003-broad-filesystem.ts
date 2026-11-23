@@ -57,7 +57,14 @@ export const broadFilesystem: Rule = {
   severity: 'high',
   description:
     'Flags MCP server arguments and docker mounts that expose the filesystem root, a whole home directory, credential locations (~/.ssh, ~/.aws, ...) or system directories, and Claude Code settings (additionalDirectories, Read/Edit allow rules, sandbox allowWrite/allowRead) that grant the same.',
-  appliesTo: ['claude-mcp', 'cursor-mcp', 'vscode-mcp', 'claude-settings'],
+  appliesTo: [
+    'claude-mcp',
+    'cursor-mcp',
+    'vscode-mcp',
+    'claude-settings',
+    'claude-plugin-manifest',
+    'claude-marketplace',
+  ],
   why: 'An agent or MCP server with access to these locations can read SSH keys, cloud credentials and other projects, and a prompt-injected agent can exfiltrate or modify them. This is an observed setting, not a proven exploit.',
   remediation:
     'Grant access to the project directory (or a specific sub-directory) instead. If broad access is intentional, add the exact path to "allowedPaths" in an agentconfig-doctor config file passed with --config.',

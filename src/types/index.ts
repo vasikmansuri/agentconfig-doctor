@@ -22,6 +22,9 @@ export const CONFIG_KINDS = [
   'claude-skill',
   'claude-command',
   'claude-agent',
+  'claude-plugin-manifest',
+  'claude-plugin-hooks',
+  'claude-marketplace',
 ] as const;
 export type ConfigKind = (typeof CONFIG_KINDS)[number];
 

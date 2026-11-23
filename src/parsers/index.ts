@@ -16,6 +16,9 @@ export function loadDocument(kind: ConfigKind, path: string, text: string): Conf
     case 'claude-mcp':
     case 'cursor-mcp':
     case 'claude-settings':
+    case 'claude-plugin-manifest':
+    case 'claude-plugin-hooks':
+    case 'claude-marketplace':
       return parseJsonDocument(kind, path, text, { jsonc: false });
     case 'vscode-mcp':
       return parseJsonDocument(kind, path, text, { jsonc: true });

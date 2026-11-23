@@ -13,13 +13,25 @@ function definitionHash(server: McpServer): string {
   );
 }
 
+/**
+ * Project directory an MCP file configures: the directory of `.mcp.json`, or
+ * the parent of `.cursor/` or `.vscode/`. Clients load the files of one
+ * project together; files of different projects (for example separate
+ * plugins in one repository) never meet, so their servers are not compared.
+ */
+export function mcpProjectDir(file: string, kind: string): string {
+  const parts = file.split('/').slice(0, -1);
+  if (kind === 'cursor-mcp' || kind === 'vscode-mcp') parts.pop();
+  return parts.join('/');
+}
+
 export const duplicateServers: Rule = {
   id: 'ACD007',
   name: 'duplicate-server-names',
   title: 'Duplicate or conflicting MCP server name',
   severity: 'medium',
   description:
-    'Detects server names defined twice in the same file (JSON duplicate keys, where only one definition takes effect), names that differ only by letter case within a file, and the same server name defined differently across the scanned MCP files.',
+    'Detects server names defined twice in the same file (JSON duplicate keys, where only one definition takes effect), names that differ only by letter case within a file, and the same server name defined differently in the MCP files of one project (.mcp.json, .cursor/mcp.json and .vscode/mcp.json side by side).',
   appliesTo: ['claude-mcp', 'cursor-mcp', 'vscode-mcp'],
   why: 'With duplicate keys, reviewers may read one definition while the client silently uses another, which can hide a malicious or broken entry. Conflicting definitions across files mean different tools run different code under the same name.',
   remediation:
@@ -64,12 +76,14 @@ export const duplicateServers: Rule = {
       }
     }
 
-    // Same name, different definition, across files.
+    // Same name, different definition, across the files of one project.
     const byName = new Map<string, McpServer[]>();
     for (const server of mcpDocs.flatMap(getMcpServers)) {
-      byName.set(server.name, [...(byName.get(server.name) ?? []), server]);
+      const group = `${mcpProjectDir(server.doc.path, server.doc.kind)}\u0000${server.name}`;
+      byName.set(group, [...(byName.get(group) ?? []), server]);
     }
-    for (const [name, servers] of byName) {
+    for (const servers of byName.values()) {
+      const name = (servers[0] as McpServer).name;
       const files = new Set(servers.map((s) => s.doc.path));
       if (files.size < 2) continue;
       if (new Set(servers.map(definitionHash)).size < 2) continue;

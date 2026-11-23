@@ -56,7 +56,16 @@ export interface HookCommand {
 
 /** Command hooks from Claude Code `hooks` settings: { Event: [{ matcher, hooks: [{ type, command }] }] }. */
 export function hookCommands(settings: Record<string, unknown>): HookCommand[] {
-  const hooks = settings.hooks;
+  return hookCommandsAt(settings.hooks, ['hooks']);
+}
+
+/**
+ * Command hooks from an event map at `basePath`. The same shape is used by
+ * settings, plugin hooks/hooks.json (under "hooks"), inline plugin manifest
+ * hooks and marketplace entries. Exec-form hooks (`args`) are joined into one
+ * command line for matching only.
+ */
+export function hookCommandsAt(hooks: unknown, basePath: (string | number)[]): HookCommand[] {
   if (!isRecord(hooks)) return [];
   const out: HookCommand[] = [];
   for (const [event, groups] of Object.entries(hooks)) {
@@ -65,10 +74,13 @@ export function hookCommands(settings: Record<string, unknown>): HookCommand[] {
       if (!isRecord(group) || !Array.isArray(group.hooks)) return;
       group.hooks.forEach((hook, hi) => {
         if (isRecord(hook) && typeof hook.command === 'string') {
+          const args = Array.isArray(hook.args)
+            ? hook.args.filter((a): a is string => typeof a === 'string')
+            : [];
           out.push({
             event,
-            command: hook.command,
-            path: ['hooks', event, gi, 'hooks', hi, 'command'],
+            command: [hook.command, ...args].join(' '),
+            path: [...basePath, event, gi, 'hooks', hi, 'command'],
           });
         }
       });

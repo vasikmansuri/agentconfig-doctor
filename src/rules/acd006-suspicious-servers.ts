@@ -265,7 +265,13 @@ export const suspiciousServers: Rule = {
   severity: 'high',
   description:
     'Flags server definitions with risky execution settings: unencrypted or IP-literal remote endpoints, hosts outside an optional allow-list, unpinned packages run via npx/uvx/pnpm dlx, executables in temp/download directories, privileged container flags, TLS-verification bypasses and library-injection environment variables.',
-  appliesTo: ['claude-mcp', 'cursor-mcp', 'vscode-mcp'],
+  appliesTo: [
+    'claude-mcp',
+    'cursor-mcp',
+    'vscode-mcp',
+    'claude-plugin-manifest',
+    'claude-marketplace',
+  ],
   why: 'These settings widen the trust placed in a server or in the network path to it. They are signals for review, not proof that a server is malicious.',
   remediation: 'Review the server definition and apply the specific remediation in each finding.',
   check(ctx) {

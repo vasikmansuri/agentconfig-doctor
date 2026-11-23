@@ -12,6 +12,7 @@ import {
   injectedCommands,
   frontmatterFieldLocation,
 } from './agent-file-model.js';
+import { marketplaceSourceCommands, pluginHookCommands } from './plugin-model.js';
 import { findingFor, type Rule, type RuleFinding } from './types.js';
 
 interface CommandSource {
@@ -116,6 +117,27 @@ function commandSources(doc: ConfigDocument): CommandSource[] {
       });
     }
   }
+  for (const hook of pluginHookCommands(doc)) {
+    sources.push({
+      text: hook.command,
+      label: hook.plugin
+        ? `${hook.event} hook of plugin "${hook.plugin}"`
+        : `plugin ${hook.event} hook`,
+      key: `hook:${hook.path.join('.')}`,
+      prose: false,
+      location: doc.locate(hook.path),
+    });
+  }
+  for (const install of marketplaceSourceCommands(doc)) {
+    sources.push({
+      text: install.command,
+      label: `install command of marketplace plugin "${install.plugin}"`,
+      key: `marketplace-source:${install.plugin}`,
+      prose: false,
+      location: doc.locate(install.path),
+      why: 'Claude Code runs a marketplace "command" source to fetch the plugin when someone installs or updates it.',
+    });
+  }
   const settings = getSettings(doc);
   if (settings) {
     for (const hook of hookCommands(settings)) {
@@ -167,7 +189,7 @@ export const riskyCommands: Rule = {
   title: 'Risky command configuration',
   severity: 'critical',
   description:
-    'Statically analyses commands in MCP server definitions, Claude Code hooks, apiKeyHelper/statusLine/headersHelper commands, Bash permission allow rules, dynamic context commands and frontmatter hooks in Claude Code skills, commands and subagents, and agent instruction files for dangerous patterns such as download-and-execute, destructive deletion, reverse shells, and obfuscated payloads.',
+    'Statically analyses commands in MCP server definitions, Claude Code hooks, apiKeyHelper/statusLine/headersHelper commands, Bash permission allow rules, dynamic context commands and frontmatter hooks in Claude Code skills, commands and subagents, plugin hooks and inline plugin MCP servers, marketplace install commands, and agent instruction files for dangerous patterns such as download-and-execute, destructive deletion, reverse shells, and obfuscated payloads.',
   appliesTo: [
     'claude-mcp',
     'cursor-mcp',
@@ -178,6 +200,9 @@ export const riskyCommands: Rule = {
     'claude-skill',
     'claude-command',
     'claude-agent',
+    'claude-plugin-manifest',
+    'claude-plugin-hooks',
+    'claude-marketplace',
   ],
   why: "These commands run automatically on a developer machine with the developer's privileges, often without a prompt. A malicious or careless command in a shared config runs for everyone who opens the project.",
   remediation:
