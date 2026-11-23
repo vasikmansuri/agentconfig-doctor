@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- `--format sarif` for `scan` and `check-mcp`: a SARIF 2.1.0 log for GitHub code scanning, with GitHub `security-severity` scores, line-independent fingerprints and baseline state. Paths are relative to the working directory, so scans of a sub-directory map to the right files. See `docs/sarif.md`.
+- `check-mcp --output <file>`.
+- Each rule in `docs/rules.md` has a stable anchor (`#acd001` and so on).
+
 ### Fixed
 
 - The README and GitHub Actions guide ran `npx --yes agentconfig-doctor@0.1.0`. The package is published as `@vasikmansuri/agentconfig-doctor`, and the unscoped name belongs to nobody, so whoever registered it could have run code in workflows copied from the docs. The examples now use `@vasikmansuri/agentconfig-doctor@0.1.2`, and a test keeps registry `npx` calls in the docs scoped.

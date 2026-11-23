@@ -147,6 +147,7 @@ agentconfig-doctor scan ./my-project --fail-on medium
 agentconfig-doctor check-mcp .cursor/mcp.json # validate MCP files only
 agentconfig-doctor scan --format json --output report.json
 agentconfig-doctor scan --format html --output report.html
+agentconfig-doctor scan --format sarif --output agentconfig-doctor.sarif  # GitHub code scanning
 agentconfig-doctor rules                      # list every rule
 ```
 
@@ -232,7 +233,7 @@ Always use the scoped package name `@vasikmansuri/agentconfig-doctor` with `npx`
 
 ## Output formats and exit codes
 
-`--format terminal` (default; colour only on a TTY; respects `NO_COLOR`), `--format json` (stable schema, see [docs/json-report.md](docs/json-report.md)) and `--format html` (self-contained, escaped, no scripts, restrictive CSP).
+`--format terminal` (default; colour only on a TTY; respects `NO_COLOR`), `--format json` (stable schema, see [docs/json-report.md](docs/json-report.md)), `--format html` (self-contained, escaped, no scripts, restrictive CSP) and `--format sarif` (SARIF 2.1.0 for GitHub code scanning, see [docs/sarif.md](docs/sarif.md)).
 
 | Code | Meaning                                                                                  |
 | ---- | ---------------------------------------------------------------------------------------- |
@@ -281,7 +282,6 @@ Details and threat model: [docs/security-model.md](docs/security-model.md). Repo
 
 Planned, in rough priority order (not commitments):
 
-- SARIF output for GitHub code scanning
 - Git-diff mode for permission changes (`--since <ref>`)
 - Adapters for more agents (Windsurf, Zed, Continue, Codex CLI, Gemini CLI) once their formats are verified
 - A published GitHub Action wrapper

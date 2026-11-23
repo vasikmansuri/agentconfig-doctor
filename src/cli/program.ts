@@ -1,4 +1,5 @@
-import { writeFile } from 'node:fs/promises';
+import { realpath, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { Command, CommanderError, InvalidArgumentError, Option } from 'commander';
 import {
   BaselineError,
@@ -14,6 +15,7 @@ import { scan, type ScanOptions } from '../engine/scan.js';
 import { shouldUseColor } from '../reporters/colors.js';
 import { renderHtml } from '../reporters/html.js';
 import { renderJson } from '../reporters/json.js';
+import { renderSarif } from '../reporters/sarif.js';
 import { buildReport, type FailOn, type Report } from '../reporters/report.js';
 import { renderTerminal } from '../reporters/terminal.js';
 import { MCP_VALIDATION_RULE_IDS, RULES } from '../rules/index.js';
@@ -38,6 +40,8 @@ export interface CliIO {
   stdout: { write(s: string): unknown; isTTY?: boolean };
   stderr: { write(s: string): unknown; isTTY?: boolean };
   env?: NodeJS.ProcessEnv;
+  /** Working directory used to make SARIF paths repository-relative. Defaults to process.cwd(). */
+  cwd?: string;
 }
 
 export const DEFAULT_BASELINE_FILE = '.agentconfig-doctor-baseline.json';
@@ -53,7 +57,7 @@ interface CommonOptions {
 }
 
 interface ReportOptions extends CommonOptions {
-  format: 'terminal' | 'json' | 'html';
+  format: 'terminal' | 'json' | 'html' | 'sarif';
   output?: string;
   failOn: FailOn;
   baseline?: string;
@@ -108,6 +112,7 @@ Examples:
   $ ${TOOL_NAME} scan ./my-project --fail-on medium
   $ ${TOOL_NAME} scan --format json --output report.json
   $ ${TOOL_NAME} scan --format html --output report.html
+  $ ${TOOL_NAME} scan --format sarif --output agentconfig-doctor.sarif
   $ ${TOOL_NAME} baseline create
   $ ${TOOL_NAME} scan --baseline ${DEFAULT_BASELINE_FILE}
   $ ${TOOL_NAME} check-mcp .cursor/mcp.json
@@ -129,9 +134,11 @@ export async function run(argv: readonly string[], io: CliIO): Promise<number> {
   const out = (s: string) => io.stdout.write(s);
   const err = (s: string) => io.stderr.write(s);
 
-  const emit = async (report: Report, opts: ReportOptions) => {
+  const emit = async (report: Report, opts: ReportOptions, root: string) => {
     let text: string;
     if (opts.format === 'json') text = renderJson(report);
+    else if (opts.format === 'sarif')
+      text = renderSarif(report, { pathPrefix: await sarifPathPrefix(root) });
     else if (opts.format === 'html') text = renderHtml(report);
     else {
       text = renderTerminal(report, {
@@ -151,6 +158,15 @@ export async function run(argv: readonly string[], io: CliIO): Promise<number> {
     const { summary } = report;
     const verdict = summary.failOn === 'none' ? 'not evaluated' : summary.failed ? 'FAIL' : 'PASS';
     err(`Report written to ${opts.output} (${summary.findings} findings, result: ${verdict}).\n`);
+  };
+
+  // SARIF consumers such as GitHub resolve paths against the repository root,
+  // which is the working directory in CI. Paths outside it are left as they are.
+  const sarifPathPrefix = async (root: string): Promise<string> => {
+    const cwd = await realpath(io.cwd ?? process.cwd()).catch(() => io.cwd ?? process.cwd());
+    const rel = path.relative(cwd, root);
+    if (rel === '' || rel.startsWith('..') || path.isAbsolute(rel)) return '';
+    return rel.split(path.sep).join('/');
   };
 
   const verdictCode = (report: Report, opts: CommonOptions): number => {
@@ -174,7 +190,7 @@ export async function run(argv: readonly string[], io: CliIO): Promise<number> {
       .command('scan')
       .description('scan a directory or a single config file for security and configuration issues')
       .argument('[path]', 'directory or supported config file to scan', '.')
-      .addOption(formatOption(['terminal', 'json', 'html']))
+      .addOption(formatOption(['terminal', 'json', 'html', 'sarif']))
       .option('--output <file>', 'write the report to a file instead of stdout')
       .addOption(failOnOption('high'))
       .option(
@@ -196,7 +212,7 @@ export async function run(argv: readonly string[], io: CliIO): Promise<number> {
           ? { file: opts.baseline, comparison: compareWithBaseline(result.findings, baseline) }
           : undefined,
     });
-    await emit(report, opts);
+    await emit(report, opts, result.root);
     exitCode = verdictCode(report, opts);
   });
 
@@ -207,7 +223,8 @@ export async function run(argv: readonly string[], io: CliIO): Promise<number> {
         'validate MCP configuration files (.mcp.json, .cursor/mcp.json, .vscode/mcp.json)',
       )
       .argument('[path]', 'directory or MCP config file to check', '.')
-      .addOption(formatOption(['terminal', 'json']))
+      .addOption(formatOption(['terminal', 'json', 'sarif']))
+      .option('--output <file>', 'write the report to a file instead of stdout')
       .addOption(failOnOption('medium')),
   ).action(async (target: string, opts: ReportOptions) => {
     const options = await scanOptionsFrom(opts);
@@ -215,7 +232,7 @@ export async function run(argv: readonly string[], io: CliIO): Promise<number> {
     options.ruleIds = MCP_VALIDATION_RULE_IDS;
     const result = await scan(target, options);
     const report = buildReport(target, result, { failOn: opts.failOn });
-    await emit(report, opts);
+    await emit(report, opts, result.root);
     exitCode = verdictCode(report, opts);
   });
 

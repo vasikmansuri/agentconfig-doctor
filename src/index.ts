@@ -24,6 +24,8 @@ export type { Report, ReportFinding, FailOn } from './reporters/report.js';
 export { renderTerminal } from './reporters/terminal.js';
 export { renderJson } from './reporters/json.js';
 export { renderHtml } from './reporters/html.js';
+export { renderSarif } from './reporters/sarif.js';
+export type { SarifOptions } from './reporters/sarif.js';
 export { findSecrets, scrubSecrets, redactSecret } from './util/secrets.js';
 export { run, EXIT } from './cli/program.js';
 export { VERSION, TOOL_NAME } from './version.js';
