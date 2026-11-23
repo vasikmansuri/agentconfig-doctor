@@ -7,14 +7,15 @@ import type { ConfigKind } from '../types/index.js';
  * values that depend on the machine running the client are kept as visible
  * markers such as ⟨env:NAME⟩.
  *
- * - Claude Code: `${VAR}` stays a marker; `${VAR:-default}` becomes the
- *   default, which is what runs wherever VAR is unset.
+ * - Claude Code (including plugin manifests and marketplaces): `${VAR}`
+ *   stays a marker; `${VAR:-default}` becomes the default, which is what runs
+ *   wherever VAR is unset.
  * - Cursor and VS Code: `${userHome}` becomes `~`, `${workspaceFolder}`
  *   becomes `.` (the project directory), `${/}` and `${pathSeparator}`
  *   become `/`; `${env:NAME}`, `${input:ID}` and anything unknown stay markers.
  */
 export function resolveInterpolation(text: string, kind: ConfigKind): string {
-  if (kind === 'claude-mcp') {
+  if (kind === 'claude-mcp' || kind === 'claude-plugin-manifest' || kind === 'claude-marketplace') {
     return text.replace(
       /\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^}]*))?\}/g,
       (_m, name: string, fallback: string | undefined) => fallback ?? `⟨env:${name}⟩`,

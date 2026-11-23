@@ -34,7 +34,34 @@ export const DEFAULT_IGNORED_DIRS = new Set([
  * files that are not a supported agent configuration format; arbitrary JSON
  * files are never treated as agent configuration.
  */
-export function classifyPath(posixPath: string): ConfigKind | undefined {
+export interface ClassifyContext {
+  /**
+   * POSIX path of the nearest enclosing Claude Code plugin root (a directory
+   * with a `.claude-plugin/plugin.json` manifest), relative to the same base as the path;
+   * '' when the base itself is the plugin root. Plugin component files are
+   * only recognised inside a plugin root, because other agents use the same
+   * directory names with different formats.
+   */
+  pluginRoot?: string | undefined;
+}
+
+/** Kind of a file inside a Claude Code plugin, by its path relative to the plugin root. */
+function classifyPluginComponent(segments: string[]): ConfigKind | undefined {
+  const [area] = segments;
+  const base = segments.at(-1) ?? '';
+  if (segments.length === 2 && area === 'hooks' && base === 'hooks.json') {
+    return 'claude-plugin-hooks';
+  }
+  if (area === 'skills' && segments.length === 3 && base === 'SKILL.md') return 'claude-skill';
+  if (area === 'commands' && segments.length >= 2 && base.endsWith('.md')) return 'claude-command';
+  if (area === 'agents' && segments.length >= 2 && base.endsWith('.md')) return 'claude-agent';
+  return undefined;
+}
+
+export function classifyPath(
+  posixPath: string,
+  context: ClassifyContext = {},
+): ConfigKind | undefined {
   const segments = posixPath.split('/').filter((s) => s !== '');
   const base = segments.at(-1);
   const parent = segments.at(-2);
@@ -67,5 +94,12 @@ export function classifyPath(posixPath: string): ConfigKind | undefined {
     if (area === 'agents') return 'claude-agent';
   }
   if (INSTRUCTION_FILES.has(base)) return 'instructions';
+  if (parent === '.claude-plugin' && base === 'plugin.json') return 'claude-plugin-manifest';
+  if (parent === '.claude-plugin' && base === 'marketplace.json') return 'claude-marketplace';
+  if (context.pluginRoot !== undefined) {
+    const rootSegments = context.pluginRoot.split('/').filter((s) => s !== '');
+    const inside = rootSegments.every((s, i) => segments[i] === s);
+    if (inside) return classifyPluginComponent(segments.slice(rootSegments.length));
+  }
   return undefined;
 }

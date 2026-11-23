@@ -297,6 +297,64 @@ function validateSettings(doc: JsonDocument, ctx: RuleContext): RuleFinding[] {
   return findings;
 }
 
+const PLUGIN_KINDS: readonly string[] = [
+  'claude-plugin-manifest',
+  'claude-plugin-hooks',
+  'claude-marketplace',
+];
+
+const PLUGIN_FILE_NAME: Record<string, string> = {
+  'claude-plugin-manifest': 'plugin manifest',
+  'claude-plugin-hooks': 'plugin hooks file',
+  'claude-marketplace': 'marketplace file',
+};
+
+function pluginParseErrors(doc: JsonDocument): RuleFinding[] {
+  return doc.parseErrors.slice(0, 5).map((error) =>
+    findingFor(doc, {
+      severity: 'medium',
+      confidence: 'high',
+      message: `Invalid JSON: ${error.message}. Claude Code cannot load this ${PLUGIN_FILE_NAME[doc.kind] ?? 'file'}.`,
+      location: { line: error.line, column: error.column },
+      key: `parse:${error.message}`,
+    }),
+  );
+}
+
+/**
+ * Plugin hooks/hooks.json must wrap the event map in a top-level "hooks" key;
+ * Claude Code fails to load a file that holds only the event map
+ * (https://code.claude.com/docs/en/plugins-reference).
+ */
+function validatePluginHooks(doc: JsonDocument): RuleFinding[] {
+  if (doc.parseErrors.length > 0 || doc.value === undefined) return [];
+  const value = doc.value;
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return [
+      findingFor(doc, {
+        severity: 'medium',
+        confidence: 'high',
+        message: 'Plugin hooks.json must be a JSON object with a "hooks" key.',
+        location: { line: 1, column: 1 },
+        key: 'plugin-hooks:not-object',
+      }),
+    ];
+  }
+  if ('hooks' in value) return [];
+  const events = Object.keys(value).filter((k) => /^[A-Z][A-Za-z]+$/.test(k));
+  if (events.length === 0) return [];
+  return [
+    findingFor(doc, {
+      severity: 'medium',
+      confidence: 'high',
+      message: `Plugin hooks.json lists events (${events.slice(0, 3).join(', ')}) at the top level instead of under "hooks". Claude Code fails to load this file, so these hooks never run.`,
+      location: doc.locate([events[0] as string]),
+      key: 'plugin-hooks:missing-wrapper',
+      remediation: 'Wrap the event map: { "hooks": { "PostToolUse": [ ... ] } }.',
+    }),
+  ];
+}
+
 function validateCursorRule(doc: TextDocument): RuleFinding[] {
   const findings: RuleFinding[] = [];
   const add = (
@@ -371,8 +429,14 @@ export const invalidSettings: Rule = {
   title: 'Missing or invalid setting',
   severity: 'medium',
   description:
-    'Validates Claude Code .claude/settings.json and settings.local.json (JSON syntax, permission rule syntax and lists, defaultMode values, MCP approval lists, env, hooks, sandbox) and Cursor .cursor/rules files (extension, frontmatter structure and field types).',
-  appliesTo: ['claude-settings', 'cursor-rule'],
+    'Validates Claude Code .claude/settings.json and settings.local.json (JSON syntax, permission rule syntax and lists, defaultMode values, MCP approval lists, env, hooks, sandbox) Cursor .cursor/rules files (extension, frontmatter structure and field types), and the "hooks" wrapper of Claude Code plugin hooks/hooks.json files, and JSON syntax of plugin manifests, plugin hooks and marketplace files.',
+  appliesTo: [
+    'claude-settings',
+    'cursor-rule',
+    'claude-plugin-manifest',
+    'claude-plugin-hooks',
+    'claude-marketplace',
+  ],
   why: 'Invalid settings are skipped or misinterpreted by the client, so the protection or behaviour the author expected is not what actually runs.',
   remediation:
     'Correct the value as described. See docs/supported-formats.md for the documented fields.',
@@ -382,6 +446,9 @@ export const invalidSettings: Rule = {
       if (isSettingsDocument(doc)) findings.push(...validateSettings(doc, ctx));
       else if (doc.kind === 'cursor-rule' && doc.format === 'text') {
         findings.push(...validateCursorRule(doc));
+      } else if (PLUGIN_KINDS.includes(doc.kind) && doc.format === 'json') {
+        findings.push(...pluginParseErrors(doc));
+        if (doc.kind === 'claude-plugin-hooks') findings.push(...validatePluginHooks(doc));
       }
     }
     return findings;

@@ -41,6 +41,8 @@ MCP command lines that contain variable references are also expanded statically 
 
 In prose files most patterns are reported at a lower severity and with low confidence, because documentation often quotes installers.
 
+Plugin hooks (`hooks/hooks.json`, inline `hooks` in `plugin.json` and in marketplace entries), inline plugin MCP servers, and marketplace `"source": "command"` install commands are checked like settings hooks and `.mcp.json` servers. Exec-form hooks (`command` plus `args`) are matched as one command line.
+
 Claude Code skills, custom commands and subagents are prose too, except for the parts Claude Code runs. These are matched at full severity and high confidence: dynamic context commands (`` !`command` `` and ` ```! ` blocks, which run while the skill loads), `command:` lines in `hooks` and `mcpServers` frontmatter, and `Bash(...)` entries in `allowed-tools`.
 
 <a id="acd003"></a>
@@ -105,7 +107,7 @@ Checks:
 
 ### ACD007 Duplicate or conflicting MCP server name (medium)
 
-Duplicate keys in the servers object (medium); names that differ only by case (low); the same name with a different command, args or url in another scanned MCP file (low).
+Duplicate keys in the servers object (medium); names that differ only by case (low); the same name with a different command, args or url in another MCP file of the same project, meaning `.mcp.json`, `.cursor/mcp.json` and `.vscode/mcp.json` in one directory (low). Files of different projects or plugins in one repository are not compared, because no client loads them together.
 
 <a id="acd008"></a>
 
@@ -124,6 +126,8 @@ Duplicate keys in the servers object (medium); names that differ only by case (l
 - Hook structure.
 
 **Cursor rules:** `.md` instead of `.mdc`, missing or unterminated frontmatter, and field types.
+
+**Claude Code plugins:** invalid JSON in `plugin.json`, `hooks/hooks.json` and `marketplace.json`, and a `hooks.json` whose events are not wrapped in a top-level `"hooks"` key, which Claude Code fails to load.
 
 <a id="acd009"></a>
 

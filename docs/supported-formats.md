@@ -46,6 +46,17 @@ Sources: <https://code.claude.com/docs/en/skills>, <https://code.claude.com/docs
 - **Fields checked:** `allowed-tools` (skills and commands; a space- or comma-separated string or a list), `disable-model-invocation`, `permissionMode` (subagents), and `command:` values under `hooks` and `mcpServers`.
 - **Dynamic context injection:** in skills and commands, `` !`command` `` at the start of a line or after whitespace, and fenced blocks opened with ` ```! `, run when the skill loads and are checked as commands.
 
+### Plugins and marketplaces
+
+Sources: <https://code.claude.com/docs/en/plugins-reference>, <https://code.claude.com/docs/en/plugins/marketplace-reference>
+
+- **Plugin root:** a directory containing `.claude-plugin/plugin.json`. Inside it, `hooks/hooks.json`, `skills/<name>/SKILL.md`, `commands/**/*.md` and `agents/**/*.md` are read. Outside a plugin root these paths are ignored, because other agents (for example Cursor and Codex plugins) use the same names with different formats. Plugins without a manifest, and component paths that a manifest moves elsewhere, are not detected.
+- **`.claude-plugin/plugin.json`:** strict JSON. Inline `mcpServers` (a map of servers in the `.mcp.json` format) and inline `hooks` (an event map, or an array of event maps and file paths) are checked. Referenced files and `.mcpb`/`.dxt` bundles are not followed.
+- **`hooks/hooks.json`:** strict JSON, `{ "description": "...", "hooks": { "<Event>": [ { "matcher": "...", "hooks": [ { "type": "command", "command": "...", "args": [...] } ] } ] } }`. Claude Code fails to load a file without the `"hooks"` wrapper; ACD008 reports this.
+- **`.claude-plugin/marketplace.json`:** strict JSON. For each `plugins[]` entry: `source` objects with `"source": "command"` (a command Claude Code runs to fetch the plugin), and inline `hooks` and `mcpServers`.
+- **Variables:** `${CLAUDE_PLUGIN_ROOT}` and other `${VAR}` references stay markers; `${VAR:-default}` expands to the default, as for `.mcp.json`.
+- **Subagents in plugins:** Claude Code ignores their `hooks`, `mcpServers` and `permissionMode` fields, so those are not checked.
+
 ## Cursor
 
 Sources: <https://cursor.com/docs/context/mcp>, <https://cursor.com/docs/context/rules>
@@ -84,7 +95,6 @@ Source: <https://code.visualstudio.com/docs/copilot/reference/mcp-configuration>
 
 ## Not supported (yet)
 
-- Plugin files (`.claude-plugin/plugin.json`, plugin `hooks/hooks.json`, plugin `skills/`, `commands/` and `agents/` directories) and `.claude-plugin/marketplace.json`.
 - User-level and enterprise files such as `~/.claude.json`, `~/.claude/settings.json` and managed settings. A user-level file can be scanned by passing its path explicitly when its format matches one above (for example `~/.cursor/mcp.json`).
 - Other agents (Windsurf, Zed, Continue, Codex CLI, Gemini CLI, Cline). Contributions backed by verified format documentation are welcome.
 - YAML or TOML MCP configuration.

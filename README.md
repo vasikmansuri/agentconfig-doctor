@@ -153,15 +153,16 @@ agentconfig-doctor rules                      # list every rule
 
 ## Supported configuration files
 
-| Format               | Files                                                                             | Parsed as                   |
-| -------------------- | --------------------------------------------------------------------------------- | --------------------------- |
-| Claude Code MCP      | `.mcp.json` (any directory in the scan)                                           | strict JSON, `mcpServers`   |
-| Claude Code settings | `.claude/settings.json`, `.claude/settings.local.json`                            | strict JSON                 |
-| Cursor MCP           | `.cursor/mcp.json`                                                                | strict JSON, `mcpServers`   |
-| Cursor rules         | `.cursor/rules/**/*.mdc` (and stray `.md` files there)                            | text + frontmatter          |
-| VS Code MCP          | `.vscode/mcp.json`                                                                | JSONC, `servers` + `inputs` |
-| Agent instructions   | `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `.cursorrules`                       | text                        |
-| Claude Code skills   | `.claude/skills/*/SKILL.md`, `.claude/commands/**/*.md`, `.claude/agents/**/*.md` | text + frontmatter          |
+| Format               | Files                                                                                                                         | Parsed as                   |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| Claude Code MCP      | `.mcp.json` (any directory in the scan)                                                                                       | strict JSON, `mcpServers`   |
+| Claude Code settings | `.claude/settings.json`, `.claude/settings.local.json`                                                                        | strict JSON                 |
+| Cursor MCP           | `.cursor/mcp.json`                                                                                                            | strict JSON, `mcpServers`   |
+| Cursor rules         | `.cursor/rules/**/*.mdc` (and stray `.md` files there)                                                                        | text + frontmatter          |
+| VS Code MCP          | `.vscode/mcp.json`                                                                                                            | JSONC, `servers` + `inputs` |
+| Agent instructions   | `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `.cursorrules`                                                                   | text                        |
+| Claude Code skills   | `.claude/skills/*/SKILL.md`, `.claude/commands/**/*.md`, `.claude/agents/**/*.md`                                             | text + frontmatter          |
+| Claude Code plugins  | `.claude-plugin/plugin.json`, plugin `hooks/hooks.json`, `skills/`, `commands/`, `agents/`; `.claude-plugin/marketplace.json` | strict JSON, text           |
 
 Formats were checked against the official Claude Code, Cursor and VS Code documentation in October 2026. Field-level details and sources are in [docs/supported-formats.md](docs/supported-formats.md).
 

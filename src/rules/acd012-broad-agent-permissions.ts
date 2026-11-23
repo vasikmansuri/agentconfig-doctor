@@ -3,6 +3,7 @@ import {
   allowedTools,
   frontmatterFieldLocation,
   isAgentFile,
+  isPluginComponent,
 } from './agent-file-model.js';
 import { isUnrestrictedShellRule } from './acd010-risky-combinations.js';
 import { findingFor, type Rule, type RuleFinding } from './types.js';
@@ -43,7 +44,7 @@ export const broadAgentPermissions: Rule = {
       }
 
       const mode = doc.frontmatter?.fields['permissionMode'];
-      if (doc.kind === 'claude-agent' && mode === 'bypassPermissions') {
+      if (doc.kind === 'claude-agent' && mode === 'bypassPermissions' && !isPluginComponent(doc)) {
         findings.push(
           findingFor(doc, {
             severity: 'high',

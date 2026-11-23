@@ -12,10 +12,14 @@ All notable changes to this project are documented here. The format follows [Kee
 - ACD002 checks the commands Claude Code runs from these files at full severity: dynamic context commands (`` !`cmd` `` and ` ```! ` blocks), `command:` lines in `hooks` and `mcpServers` frontmatter, and `Bash(...)` entries in `allowed-tools`.
 - ACD012 (new): `allowed-tools` that pre-approves every shell command in a skill or command, and subagents with `permissionMode: bypassPermissions`.
 - New configuration kinds in reports: `claude-skill`, `claude-command`, `claude-agent`.
+- Claude Code plugins: inside a directory with `.claude-plugin/plugin.json`, the plugin's `hooks/hooks.json`, `skills/`, `commands/` and `agents/` are scanned. ACD002 checks plugin hooks, inline manifest hooks and MCP servers, and marketplace `"source": "command"` install commands; ACD003, ACD004 and ACD006 check inline plugin MCP servers. New kinds `claude-plugin-manifest`, `claude-plugin-hooks` and `claude-marketplace`.
+- ACD008 reports invalid JSON in plugin files and a plugin `hooks.json` without the `"hooks"` wrapper, which Claude Code fails to load.
+- Exec-form hooks (`command` plus `args`) are checked as one command line, in settings and plugins.
 - Each rule in `docs/rules.md` has a stable anchor (`#acd001` and so on).
 
 ### Fixed
 
+- ACD007 no longer compares MCP servers of different projects or plugins in one repository. It now compares `.mcp.json`, `.cursor/mcp.json` and `.vscode/mcp.json` of the same directory, which are the files clients load together.
 - The README and GitHub Actions guide ran `npx --yes agentconfig-doctor@0.1.0`. The package is published as `@vasikmansuri/agentconfig-doctor`, and the unscoped name belongs to nobody, so whoever registered it could have run code in workflows copied from the docs. The examples now use `@vasikmansuri/agentconfig-doctor@0.1.2`, and a test keeps registry `npx` calls in the docs scoped.
 - The "Running from source" workflow example checked out a tag that does not exist.
 

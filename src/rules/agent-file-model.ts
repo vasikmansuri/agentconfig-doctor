@@ -20,6 +20,15 @@ export function isAgentFile(doc: ConfigDocument): doc is TextDocument {
   return doc.format === 'text' && AGENT_FILE_KINDS.includes(doc.kind);
 }
 
+/**
+ * True for skills, commands and subagents that come from a plugin directory
+ * rather than `.claude/`. Claude Code ignores the `hooks`, `mcpServers` and
+ * `permissionMode` fields of plugin subagents.
+ */
+export function isPluginComponent(doc: ConfigDocument): boolean {
+  return isAgentFile(doc) && !doc.path.split('/').includes('.claude');
+}
+
 export function agentFileLabel(kind: ConfigKind): string {
   return kind === 'claude-skill' ? 'skill' : kind === 'claude-command' ? 'command' : 'subagent';
 }
@@ -95,6 +104,7 @@ function unquote(value: string): string {
  */
 export function frontmatterCommands(doc: ConfigDocument): FrontmatterCommand[] {
   if (!isAgentFile(doc)) return [];
+  if (doc.kind === 'claude-agent' && isPluginComponent(doc)) return [];
   const out: FrontmatterCommand[] = [];
   for (const field of ['hooks', 'mcpServers']) {
     for (const line of doc.frontmatter?.blocks?.[field] ?? []) {

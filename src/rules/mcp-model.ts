@@ -42,19 +42,53 @@ export function normaliseTransport(type: unknown, def: Record<string, unknown>):
   return 'unknown';
 }
 
-/** Returns the server definitions of a parsed MCP document. */
+/**
+ * JSON paths of the server maps a document defines: the top-level servers
+ * object of an MCP file, inline `mcpServers` in a plugin manifest, and inline
+ * `mcpServers` in marketplace plugin entries. Paths and bundles referenced by
+ * a manifest are not followed.
+ */
+function serverContainers(doc: JsonDocument): JsonPath[] {
+  if (!isRecord(doc.value)) return [];
+  if (isMcpDocument(doc)) return [[serversKey(doc.kind)]];
+  if (doc.kind === 'claude-plugin-manifest') return [['mcpServers']];
+  if (doc.kind === 'claude-marketplace' && Array.isArray(doc.value.plugins)) {
+    return doc.value.plugins.map((_, i): JsonPath => ['plugins', i, 'mcpServers']);
+  }
+  return [];
+}
+
+function valueAt(root: unknown, path: JsonPath): unknown {
+  let value = root;
+  for (const segment of path) {
+    if (Array.isArray(value) && typeof segment === 'number') value = value[segment];
+    else if (isRecord(value) && typeof segment === 'string') value = value[segment];
+    else return undefined;
+  }
+  return value;
+}
+
+/** Returns the server definitions of a parsed MCP document or plugin file. */
 export function getMcpServers(doc: ConfigDocument): McpServer[] {
-  if (!isMcpDocument(doc) || !isRecord(doc.value)) return [];
-  const key = serversKey(doc.kind);
-  const container = doc.value[key];
-  if (!isRecord(container)) return [];
+  if (doc.format !== 'json') return [];
+  return serverContainers(doc).flatMap((containerPath) => {
+    const container = valueAt(doc.value, containerPath);
+    return isRecord(container) ? serversIn(doc, container, containerPath) : [];
+  });
+}
+
+function serversIn(
+  doc: JsonDocument,
+  container: Record<string, unknown>,
+  containerPath: JsonPath,
+): McpServer[] {
   return Object.entries(container).map(([name, def]) => {
     const record = isRecord(def) ? def : {};
     return {
       doc,
       name,
       def,
-      path: [key, name],
+      path: [...containerPath, name],
       transport: normaliseTransport(record.type, record),
       command: typeof record.command === 'string' ? record.command : undefined,
       args: Array.isArray(record.args)

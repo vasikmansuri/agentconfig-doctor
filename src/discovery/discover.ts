@@ -62,7 +62,10 @@ export async function discover(
 
   if (info.isFile()) {
     const real = await realpath(absolute);
-    const kind = classifyPath(toPosix(absolute)) ?? classifyPath(toPosix(real));
+    const kind =
+      classifyPath(toPosix(absolute)) ??
+      classifyPath(toPosix(real)) ??
+      (await classifyPluginFile(real));
     if (!kind) {
       throw new InputError(
         `"${target}" is not a supported agent configuration file. Run "agentconfig-doctor rules" to see supported formats.`,
@@ -98,7 +101,11 @@ export async function discover(
   let visited = 0;
   let truncated = false;
 
-  const walk = async (relDir: string, depth: number): Promise<void> => {
+  const walk = async (
+    relDir: string,
+    depth: number,
+    pluginRoot: string | undefined,
+  ): Promise<void> => {
     if (truncated) return;
     if (depth > MAX_DEPTH) {
       skipped.push({ path: relDir, reason: `directory nesting exceeds ${MAX_DEPTH} levels` });
@@ -112,6 +119,15 @@ export async function discover(
       return;
     }
     entries.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+    // The nearest directory with a .claude-plugin/plugin.json manifest is the
+    // plugin root. A .claude-plugin/ holding only marketplace.json marks a
+    // marketplace, whose plugins usually live in sub-directories.
+    if (
+      entries.some((e) => e.name === '.claude-plugin' && e.isDirectory()) &&
+      (await isFile(path.join(root, relDir, '.claude-plugin', 'plugin.json')))
+    ) {
+      pluginRoot = relDir;
+    }
 
     for (const entry of entries) {
       if (++visited > maxEntries) {
@@ -127,11 +143,11 @@ export async function discover(
 
       if (entry.isDirectory()) {
         if (DEFAULT_IGNORED_DIRS.has(entry.name) || exclude(rel)) continue;
-        await walk(rel, depth + 1);
+        await walk(rel, depth + 1, pluginRoot);
         continue;
       }
 
-      const kind = classifyPath(rel);
+      const kind = classifyPath(rel, { pluginRoot });
       if (entry.isSymbolicLink()) {
         let target: string;
         try {
@@ -179,10 +195,30 @@ export async function discover(
     }
   };
 
-  await walk('', 0);
+  await walk('', 0, undefined);
   files.sort(byPath);
   skipped.sort(byPath);
   return { root, files, skipped, truncated };
+}
+
+const PLUGIN_COMPONENT_DEPTH = 6;
+
+/**
+ * Classifies a single file passed on the command line that may be a plugin
+ * component (for example plugin/hooks/hooks.json), by looking for the nearest
+ * ancestor directory with a .claude-plugin/plugin.json manifest.
+ */
+async function classifyPluginFile(file: string): Promise<ReturnType<typeof classifyPath>> {
+  let dir = path.dirname(file);
+  for (let i = 0; i < PLUGIN_COMPONENT_DEPTH; i++) {
+    if (await isFile(path.join(dir, '.claude-plugin', 'plugin.json'))) {
+      return classifyPath(toPosix(path.relative(dir, file)), { pluginRoot: '' });
+    }
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return undefined;
 }
 
 export type ReadResult = { ok: true; text: string } | { ok: false; reason: string };
@@ -212,6 +248,14 @@ export async function readDiscoveredFile(
     return { ok: true, text: buffer.toString('utf8') };
   } catch (error) {
     return { ok: false, reason: `unreadable (${errorCode(error)})` };
+  }
+}
+
+async function isFile(p: string): Promise<boolean> {
+  try {
+    return (await stat(p)).isFile();
+  } catch {
+    return false;
   }
 }
 
