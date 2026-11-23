@@ -8,6 +8,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 - `--format sarif` for `scan` and `check-mcp`: a SARIF 2.1.0 log for GitHub code scanning, with GitHub `security-severity` scores, line-independent fingerprints and baseline state. Paths are relative to the working directory, so scans of a sub-directory map to the right files. See `docs/sarif.md`.
 - `check-mcp --output <file>`.
+- Claude Code skills (`.claude/skills/<name>/SKILL.md`), custom commands (`.claude/commands/**/*.md`) and subagents (`.claude/agents/**/*.md`) are scanned. ACD001 and ACD011 apply as for other text files.
+- ACD002 checks the commands Claude Code runs from these files at full severity: dynamic context commands (`` !`cmd` `` and ` ```! ` blocks), `command:` lines in `hooks` and `mcpServers` frontmatter, and `Bash(...)` entries in `allowed-tools`.
+- ACD012 (new): `allowed-tools` that pre-approves every shell command in a skill or command, and subagents with `permissionMode: bypassPermissions`.
+- New configuration kinds in reports: `claude-skill`, `claude-command`, `claude-agent`.
 - Each rule in `docs/rules.md` has a stable anchor (`#acd001` and so on).
 
 ### Fixed

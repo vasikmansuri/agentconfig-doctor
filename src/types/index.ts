@@ -19,6 +19,9 @@ export const CONFIG_KINDS = [
   'claude-settings',
   'cursor-rule',
   'instructions',
+  'claude-skill',
+  'claude-command',
+  'claude-agent',
 ] as const;
 export type ConfigKind = (typeof CONFIG_KINDS)[number];
 
@@ -59,11 +62,23 @@ export interface JsonDocument extends BaseDocument {
   duplicateKeys: { path: JsonPath; key: string; location: SourceLocation }[];
 }
 
+export interface FrontmatterLine {
+  text: string;
+  /** 1-based line in the file. */
+  line: number;
+}
+
 export interface Frontmatter {
   present: boolean;
   terminated: boolean;
   fields: Record<string, unknown>;
   issues: ParseIssue[];
+  /**
+   * Indented YAML under a top-level key that is not a plain list (for example
+   * `hooks:` or `mcpServers:` maps), kept as raw lines. Only filled when the
+   * document was parsed with nested blocks allowed.
+   */
+  blocks?: Record<string, FrontmatterLine[]>;
 }
 
 export interface TextDocument extends BaseDocument {

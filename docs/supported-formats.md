@@ -37,6 +37,15 @@ Sources: <https://code.claude.com/docs/en/mcp>, <https://code.claude.com/docs/en
 
 `CLAUDE.md`, `CLAUDE.local.md` and `.claude/CLAUDE.md` are read as plain text for credential, dangerous-command and hidden-Unicode checks.
 
+### Skills, custom commands and subagents
+
+Sources: <https://code.claude.com/docs/en/skills>, <https://code.claude.com/docs/en/sub-agents>, <https://code.claude.com/docs/en/hooks>
+
+- **Locations:** `.claude/skills/<name>/SKILL.md` (other files in a skill directory are supporting material and are not read), `.claude/commands/**/*.md` (legacy custom commands, which Claude Code now treats as skills), and `.claude/agents/**/*.md`. Nested `<dir>/.claude/...` locations are included.
+- **Parsing:** Markdown with YAML frontmatter. Top-level scalars and plain lists are read as values. Nested blocks such as `hooks` and `mcpServers` are kept as raw lines; only their `command:` lines are used. Unknown fields are ignored, as Claude Code ignores them.
+- **Fields checked:** `allowed-tools` (skills and commands; a space- or comma-separated string or a list), `disable-model-invocation`, `permissionMode` (subagents), and `command:` values under `hooks` and `mcpServers`.
+- **Dynamic context injection:** in skills and commands, `` !`command` `` at the start of a line or after whitespace, and fenced blocks opened with ` ```! `, run when the skill loads and are checked as commands.
+
 ## Cursor
 
 Sources: <https://cursor.com/docs/context/mcp>, <https://cursor.com/docs/context/rules>
@@ -75,6 +84,7 @@ Source: <https://code.visualstudio.com/docs/copilot/reference/mcp-configuration>
 
 ## Not supported (yet)
 
+- Plugin files (`.claude-plugin/plugin.json`, plugin `hooks/hooks.json`, plugin `skills/`, `commands/` and `agents/` directories) and `.claude-plugin/marketplace.json`.
 - User-level and enterprise files such as `~/.claude.json`, `~/.claude/settings.json` and managed settings. A user-level file can be scanned by passing its path explicitly when its format matches one above (for example `~/.cursor/mcp.json`).
 - Other agents (Windsurf, Zed, Continue, Codex CLI, Gemini CLI, Cline). Contributions backed by verified format documentation are welcome.
 - YAML or TOML MCP configuration.

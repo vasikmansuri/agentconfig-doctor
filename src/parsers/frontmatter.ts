@@ -6,11 +6,22 @@ import type { Frontmatter, ParseIssue } from '../types/index.js';
  * and block lists (`- item`). Anything else is reported as an issue rather
  * than guessed at.
  */
-export function parseFrontmatter(text: string): Frontmatter {
+export interface FrontmatterOptions {
+  /**
+   * Keep indented YAML that is not a plain list (nested maps, lists of maps)
+   * as raw lines in `blocks` instead of reporting it. Used for Claude Code
+   * skills, commands and subagents, whose `hooks` and `mcpServers` fields are
+   * nested.
+   */
+  nested?: boolean;
+}
+
+export function parseFrontmatter(text: string, options: FrontmatterOptions = {}): Frontmatter {
   const lines = text.replace(/^\ufeff/, '').split(/\r?\n/);
   const result: Frontmatter = { present: false, terminated: false, fields: {}, issues: [] };
   if (lines[0]?.trim() !== '---') return result;
   result.present = true;
+  if (options.nested) result.blocks = {};
 
   let currentListKey: string | undefined;
   for (let i = 1; i < lines.length; i++) {
@@ -20,6 +31,21 @@ export function parseFrontmatter(text: string): Frontmatter {
       return result;
     }
     if (line.trim() === '' || line.trimStart().startsWith('#')) continue;
+
+    if (result.blocks && currentListKey !== undefined && /^\s/.test(line)) {
+      // Inside a nested value: keep every line, and keep the plain list only
+      // while each line is a "- scalar" item.
+      const block = (result.blocks[currentListKey] ??= []);
+      block.push({ text: line, line: i + 1 });
+      const item = /^\s*-\s+(.*)$/.exec(line);
+      const list = result.fields[currentListKey];
+      if (item && Array.isArray(list) && !/^[\w-]+\s*:(?:\s|$)/.test(item[1] ?? '')) {
+        list.push(parseScalar(item[1] ?? ''));
+      } else {
+        result.fields[currentListKey] = undefined;
+      }
+      continue;
+    }
 
     const listItem = /^\s*-\s+(.*)$/.exec(line);
     if (listItem && currentListKey !== undefined) {

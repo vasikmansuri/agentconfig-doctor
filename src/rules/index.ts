@@ -9,6 +9,7 @@ import { invalidSettings } from './acd008-invalid-settings.js';
 import { permissionChanges } from './acd009-permission-changes.js';
 import { riskyCombinations } from './acd010-risky-combinations.js';
 import { hiddenUnicode } from './acd011-hidden-unicode.js';
+import { broadAgentPermissions } from './acd012-broad-agent-permissions.js';
 import type { Rule } from './types.js';
 
 /** All rules, in stable ID order. IDs are never reused or renumbered. */
@@ -24,6 +25,7 @@ export const RULES: readonly Rule[] = [
   permissionChanges,
   riskyCombinations,
   hiddenUnicode,
+  broadAgentPermissions,
 ];
 
 /** Rules used by `check-mcp`: structural validation only. */
