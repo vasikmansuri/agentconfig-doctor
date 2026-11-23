@@ -20,7 +20,10 @@ export function loadDocument(kind: ConfigKind, path: string, text: string): Conf
     case 'vscode-mcp':
       return parseJsonDocument(kind, path, text, { jsonc: true });
     case 'cursor-rule':
-    case 'instructions': {
+    case 'instructions':
+    case 'claude-skill':
+    case 'claude-command':
+    case 'claude-agent': {
       const doc: TextDocument = {
         kind,
         path,
@@ -30,6 +33,7 @@ export function loadDocument(kind: ConfigKind, path: string, text: string): Conf
         locate: () => undefined,
       };
       if (kind === 'cursor-rule') doc.frontmatter = parseFrontmatter(text);
+      else if (kind !== 'instructions') doc.frontmatter = parseFrontmatter(text, { nested: true });
       return doc;
     }
   }

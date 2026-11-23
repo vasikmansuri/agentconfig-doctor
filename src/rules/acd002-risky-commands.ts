@@ -5,6 +5,13 @@ import { isShellWrapper, matchCommandPatterns } from './command-patterns.js';
 import { resolveInterpolation } from './interpolation.js';
 import { commandLine, getMcpServers } from './mcp-model.js';
 import { getSettings, hookCommands, parsePermissionRule, stringsAt } from './settings-model.js';
+import {
+  agentFileLabel,
+  allowedTools,
+  frontmatterCommands,
+  injectedCommands,
+  frontmatterFieldLocation,
+} from './agent-file-model.js';
 import { findingFor, type Rule, type RuleFinding } from './types.js';
 
 interface CommandSource {
@@ -18,12 +25,73 @@ interface CommandSource {
   /** True for permission allow rules, which pre-approve rather than run a command. */
   allowRule?: boolean;
   location?: SourceLocation | undefined;
+  /** Prose only: character ranges already reported as real commands. */
+  exclude?: [number, number][];
+  /** Overrides the rule's default explanation. */
+  why?: string;
+}
+
+const INJECTION_WHY =
+  'Claude Code runs this command while it loads the skill or command, before the model sees the text, and without a prompt when allowed-tools or the permission rules pre-approve it.';
+
+const FRONTMATTER_COMMAND_WHY =
+  "Commands in skill, command and subagent frontmatter run automatically while that file is active, with the developer's privileges.";
+
+function lineRange(text: string, line: number): [number, number] {
+  let start = 0;
+  for (let i = 1; i < line; i++) {
+    const next = text.indexOf('\n', start);
+    if (next === -1) return [text.length, text.length];
+    start = next + 1;
+  }
+  const end = text.indexOf('\n', start);
+  return [start, end === -1 ? text.length : end];
+}
+
+function textCommandSources(doc: ConfigDocument & { format: 'text' }): CommandSource[] {
+  const sources: CommandSource[] = [];
+  const exclude: [number, number][] = [];
+  const what = agentFileLabel(doc.kind);
+  for (const c of injectedCommands(doc)) {
+    sources.push({
+      text: c.command,
+      label: `dynamic context command in this ${what}`,
+      key: `inject:${shortHash(c.command)}`,
+      prose: false,
+      location: doc.locateOffset(c.index),
+      why: INJECTION_WHY,
+    });
+    exclude.push(c.range);
+  }
+  for (const c of frontmatterCommands(doc)) {
+    sources.push({
+      text: c.command,
+      label: c.field === 'hooks' ? `${what} frontmatter hook` : `${what} frontmatter MCP server`,
+      key: `frontmatter:${c.field}:${shortHash(c.command)}`,
+      prose: false,
+      location: c.location,
+      why: FRONTMATTER_COMMAND_WHY,
+    });
+    exclude.push(lineRange(doc.text, c.location.line));
+  }
+  for (const tool of allowedTools(doc)) {
+    const rule = parsePermissionRule(tool);
+    if (!rule?.specifier || !/^(?:Bash|PowerShell)$/.test(rule.tool)) continue;
+    sources.push({
+      text: rule.specifier,
+      label: `allowed-tools entry ${tool}`,
+      key: `allowed-tools:${tool}`,
+      prose: false,
+      allowRule: true,
+      location: frontmatterFieldLocation(doc, 'allowed-tools'),
+    });
+  }
+  sources.push({ text: doc.text, label: 'instruction text', key: 'text', prose: true, exclude });
+  return sources;
 }
 
 function commandSources(doc: ConfigDocument): CommandSource[] {
-  if (doc.format === 'text') {
-    return [{ text: doc.text, label: 'instruction text', key: 'text', prose: true }];
-  }
+  if (doc.format === 'text') return textCommandSources(doc);
   const sources: CommandSource[] = [];
   for (const server of getMcpServers(doc)) {
     if (server.command !== undefined) {
@@ -99,7 +167,7 @@ export const riskyCommands: Rule = {
   title: 'Risky command configuration',
   severity: 'critical',
   description:
-    'Statically analyses commands in MCP server definitions, Claude Code hooks, apiKeyHelper/statusLine/headersHelper commands, Bash permission allow rules, and agent instruction files for dangerous patterns such as download-and-execute, destructive deletion, reverse shells, and obfuscated payloads.',
+    'Statically analyses commands in MCP server definitions, Claude Code hooks, apiKeyHelper/statusLine/headersHelper commands, Bash permission allow rules, dynamic context commands and frontmatter hooks in Claude Code skills, commands and subagents, and agent instruction files for dangerous patterns such as download-and-execute, destructive deletion, reverse shells, and obfuscated payloads.',
   appliesTo: [
     'claude-mcp',
     'cursor-mcp',
@@ -107,6 +175,9 @@ export const riskyCommands: Rule = {
     'claude-settings',
     'cursor-rule',
     'instructions',
+    'claude-skill',
+    'claude-command',
+    'claude-agent',
   ],
   why: "These commands run automatically on a developer machine with the developer's privileges, often without a prompt. A malicious or careless command in a shared config runs for everyone who opens the project.",
   remediation:
@@ -126,6 +197,9 @@ export const riskyCommands: Rule = {
             .map((m) => ({ ...m, expanded: true })),
         ];
         for (const match of matches) {
+          if (source.exclude?.some(([from, to]) => match.index >= from && match.index < to)) {
+            continue;
+          }
           const severity = source.prose ? match.pattern.proseSeverity : match.pattern.severity;
           const action = source.allowRule
             ? `pre-approves a command that ${match.pattern.reason}`
@@ -144,7 +218,7 @@ export const riskyCommands: Rule = {
               key: `${source.key}:${match.pattern.id}${source.prose ? `:${shortHash(match.text)}` : ''}`,
               why: source.prose
                 ? 'Agents follow instruction files, so a dangerous command in one may be executed by the agent. Documentation examples also match this pattern; review the surrounding text before acting.'
-                : undefined,
+                : source.why,
             }),
           );
         }

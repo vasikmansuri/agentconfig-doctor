@@ -41,6 +41,8 @@ MCP command lines that contain variable references are also expanded statically 
 
 In prose files most patterns are reported at a lower severity and with low confidence, because documentation often quotes installers.
 
+Claude Code skills, custom commands and subagents are prose too, except for the parts Claude Code runs. These are matched at full severity and high confidence: dynamic context commands (`` !`command` `` and ` ```! ` blocks, which run while the skill loads), `command:` lines in `hooks` and `mcpServers` frontmatter, and `Bash(...)` entries in `allowed-tools`.
+
 <a id="acd003"></a>
 
 ### ACD003 Broad filesystem access (up to high)
@@ -145,3 +147,13 @@ Requires `--baseline`. See [baselines.md](baselines.md).
 - Zero-width U+200B, U+2060 and non-leading U+FEFF: medium.
 
 U+200C and U+200D are not reported because they are legitimate in emoji and several scripts.
+
+<a id="acd012"></a>
+
+### ACD012 Broad permission in a skill, command or subagent (up to high)
+
+- **high:** a skill or custom command whose `allowed-tools` pre-approves every shell command (`Bash`, `Bash(*)`, `PowerShell`), when the model can load it by itself.
+- **medium:** the same, when `disable-model-invocation: true` limits it to explicit use.
+- **high:** a subagent with `permissionMode: bypassPermissions`.
+
+A subagent's `tools` list restricts which tools it may use; it does not pre-approve them, so it is not reported. Specific grants such as `Bash(git diff *)` are fine; ACD002 checks their patterns.

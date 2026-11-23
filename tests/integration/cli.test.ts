@@ -261,7 +261,7 @@ describe('informational commands', () => {
 
   it('keeps rule IDs stable and unique', () => {
     expect(RULES.map((r) => r.id)).toEqual(
-      Array.from({ length: 11 }, (_, i) => `ACD${String(i + 1).padStart(3, '0')}`),
+      Array.from({ length: 12 }, (_, i) => `ACD${String(i + 1).padStart(3, '0')}`),
     );
   });
 });

@@ -55,6 +55,17 @@ export function classifyPath(posixPath: string): ConfigKind | undefined {
   ) {
     return 'cursor-rule';
   }
+  // Claude Code skills, legacy custom commands and subagents. Only SKILL.md is
+  // the skill itself; other files in a skill directory are supporting material.
+  const claudeIndex = segments.lastIndexOf('.claude');
+  if (claudeIndex >= 0 && claudeIndex < segments.length - 2 && base.endsWith('.md')) {
+    const area = segments[claudeIndex + 1];
+    if (area === 'skills' && base === 'SKILL.md' && claudeIndex === segments.length - 4) {
+      return 'claude-skill';
+    }
+    if (area === 'commands') return 'claude-command';
+    if (area === 'agents') return 'claude-agent';
+  }
   if (INSTRUCTION_FILES.has(base)) return 'instructions';
   return undefined;
 }
